@@ -7,6 +7,49 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Department {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  points       Int           @default(0)
+  achievements Achievement[]
+  winners      Winner[]
+}
+
+model Event {
+  id          String        @id @default(cuid())
+  name        String
+  status      EventStatus   @default(UPCOMING)
+  division    EventDivision
+  type        EventType?     // NEW: individual or team
+  date        DateTime
+  guidelines  String?       // NEW: guidelines
+  points      Json          @default("{}") // e.g., { "1": 30, "2":25, "3":20 }
+  winners     Winner[]
+}
+
+model Winner {
+  id          String     @id @default(cuid())
+  eventId     String
+  deptId      String
+  position    Int        // 1, 2, or 3
+  studentName String?    // only for individual events
+  department  Department @relation(fields: [deptId], references: [id])
+  event       Event      @relation(fields: [eventId], references: [id])
+}
+
+model Achievement {
+  id         String     @id @default(cuid())
+  deptId     String
+  badgeName  String
+  department Department @relation(fields: [deptId], references: [id])
+}
+
+model Settings {
+  id                 String  @id @default(cuid())
+  leaderboardVisible Boolean @default(true)
+  lockdown           Boolean @default(false)
+}
+
 enum EventStatus {
   UPCOMING
   ONGOING
@@ -18,43 +61,7 @@ enum EventDivision {
   OFFSTAGE
 }
 
-model Department {
-  id           String        @id @default(cuid())
-  name         String        @unique
-  points       Int           @default(0)
-  winners      Winner[]
-  achievements Achievement[]
-}
-
-model Event {
-  id        String        @id @default(cuid())
-  name      String
-  status    EventStatus   @default(UPCOMING)
-  division  EventDivision
-  date      DateTime
-  points    Json          @default("{}") // points per position, e.g. { "1": 10, "2": 7, "3": 5 }
-  winners   Winner[]
-}
-
-model Winner {
-  id           String     @id @default(cuid())
-  event        Event      @relation(fields: [eventId], references: [id])
-  eventId      String
-  department   Department @relation(fields: [deptId], references: [id])
-  deptId       String
-  position     Int
-  studentName  String?
-}
-
-model Achievement {
-  id         String     @id @default(cuid())
-  department Department @relation(fields: [deptId], references: [id])
-  deptId     String
-  badgeName  String
-}
-
-model Settings {
-  id                 String @id @default(cuid())
-  leaderboardVisible Boolean @default(true)
-  lockdown           Boolean @default(false)
+enum EventType {
+  INDIVIDUAL
+  TEAM
 }

@@ -18,9 +18,8 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "College Culturals 2024",
+  title: "Engenia2k25",
   description: "Join us for the most vibrant cultural festival of the year",
-  generator: "v0.app",
 }
 
 export default function RootLayout({

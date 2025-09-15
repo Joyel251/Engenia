@@ -55,6 +55,15 @@ const config: Config = {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
+  		},
+  		keyframes: {
+  			shine: {
+  				'0%': { 'background-position': '200% 0' },
+  				'100%': { 'background-position': '-200% 0' },
+  			}
+  		},
+  		animation: {
+  			shine: 'shine 3s linear infinite',
   		}
   	}
   },

@@ -51,11 +51,16 @@ const BlurText: React.FC<BlurTextProps> = ({
   const [inView, setInView] = useState(false)
   const ref = useRef<HTMLParagraphElement>(null)
 
-  useEffect(() => {
+   useEffect(() => {
     if (!ref.current) return
+
+    console.log("[v0] Setting up intersection observer for BlurText")
+
     const observer = new IntersectionObserver(
       ([entry]) => {
+        console.log("[v0] Intersection observer triggered:", entry.isIntersecting)
         if (entry.isIntersecting) {
+          console.log("[v0] BlurText is in view, starting animation")
           setInView(true)
           observer.unobserve(ref.current as Element)
         }

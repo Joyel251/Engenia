@@ -60,10 +60,15 @@ const config: Config = {
   			shine: {
   				'0%': { 'background-position': '200% 0' },
   				'100%': { 'background-position': '-200% 0' },
+  			},
+  			'fade-in': {
+  				'0%': { opacity: '0' },
+  				'100%': { opacity: '1' },
   			}
   		},
   		animation: {
   			shine: 'shine 3s linear infinite',
+  			'fade-in': 'fade-in 0.8s ease-out forwards',
   		}
   	}
   },

@@ -3,14 +3,24 @@
 import LightRays from "@/components/light-rays";
 import BlurText from "@/components/blur-text";
 import ShinyText from "@/components/shiny-text";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 export default function SplashScreen() {
   const [showShinyText, setShowShinyText] = useState(false);
   const [showNavigationPrompt, setShowNavigationPrompt] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showLogo, setShowLogo] = useState(false);
   const router = useRouter();
+
+  useEffect(() => {
+    // Show logo with delay
+    const logoTimer = setTimeout(() => {
+      setShowLogo(true);
+    }, 500);
+
+    return () => clearTimeout(logoTimer);
+  }, []);
 
   const handleAnimationComplete = () => {
     console.log("Engenia 2K25 animation completed!");
@@ -33,6 +43,41 @@ export default function SplashScreen() {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black">
+      {/* Static Logo with College Name */}
+      <div className={`absolute top-8 left-8 z-20 transition-all duration-1000 ease-out ${
+        showLogo 
+          ? 'opacity-100 transform translate-y-0 scale-100' 
+          : 'opacity-0 transform -translate-y-8 scale-90'
+      }`}>
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <img 
+              src="/logo.jpg" 
+              alt="ENGENIA Logo" 
+              className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover shadow-2xl hover:scale-110 transition-transform duration-300 border-2 border-white/20 hover:border-white/40"
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))'
+              }}
+            />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
+          </div>
+          
+          {/* College Name with Shiny Text Effect */}
+          <div className="flex flex-col">
+            <ShinyText 
+              text="Loyola-ICAM College of"
+              className="text-white text-lg md:text-xl lg:text-2xl font-bold tracking-wide"
+              speed={3}
+            />
+            <ShinyText 
+              text="Engineering and Technology"
+              className="text-white text-lg md:text-xl lg:text-2xl font-bold tracking-wide mt-1"
+              speed={3}
+            />
+          </div>
+        </div>
+      </div>
+
       {/* Light rays background */}
       <div className="absolute inset-0 z-0">
         <LightRays

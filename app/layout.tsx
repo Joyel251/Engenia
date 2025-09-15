@@ -20,6 +20,11 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Engenia2k25",
   description: "Join us for the most vibrant cultural festival of the year",
+//  { icons: {
+  //  icon: "/favicon.png",
+    //shortcut: "/favicon.png",
+    //apple: "/favicon.png",
+  //},
 }
 
 export default function RootLayout({

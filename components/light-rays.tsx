@@ -81,6 +81,47 @@ const LightRays: React.FC<LightRaysProps> = ({
   distortion = 0.0,
   className = "",
 }) => {
+  // Mobile detection and responsive parameters
+  const [isMobile, setIsMobile] = useState(false)
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 })
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 768 || 'ontouchstart' in window
+      setIsMobile(mobile)
+      setScreenSize({ width: window.innerWidth, height: window.innerHeight })
+    }
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Responsive parameters based on device type and screen size
+  const getResponsiveParams = () => {
+    const baseParams = {
+      dpr: Math.min(window.devicePixelRatio, 2),
+      lightSpread: lightSpread,
+      rayLength: rayLength,
+      fadeDistance: fadeDistance,
+      mouseInfluence: mouseInfluence,
+      raysSpeed: raysSpeed
+    }
+
+    if (isMobile) {
+      return {
+        ...baseParams,
+        dpr: Math.min(window.devicePixelRatio, 1.5), // Lower DPR for mobile performance
+        lightSpread: Math.max(lightSpread * 1.5, 2), // Increase spread for better visibility
+        rayLength: Math.max(rayLength * 1.2, 3), // Longer rays for mobile
+        fadeDistance: Math.min(fadeDistance * 1.3, 1), // Better fade distance
+        mouseInfluence: mouseInfluence * 2, // More responsive to touch
+        raysSpeed: raysSpeed * 0.8 // Slightly slower for mobile
+      }
+    }
+
+    return baseParams
+  }
   const containerRef = useRef<HTMLDivElement>(null)
   const uniformsRef = useRef<any>(null)
   const rendererRef = useRef<Renderer | null>(null)
@@ -128,8 +169,10 @@ const LightRays: React.FC<LightRaysProps> = ({
 
       if (!containerRef.current) return
 
+      const responsiveParams = getResponsiveParams()
+      
       const renderer = new Renderer({
-        dpr: Math.min(window.devicePixelRatio, 2),
+        dpr: responsiveParams.dpr,
         alpha: true,
       })
       rendererRef.current = renderer
@@ -151,7 +194,7 @@ void main() {
   gl_Position = vec4(position, 0.0, 1.0);
 }`
 
-      const frag = `precision highp float;
+      const frag = `precision ${isMobile ? 'mediump' : 'highp'} float;
 
 uniform float iTime;
 uniform vec2  iResolution;
@@ -219,17 +262,18 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
                rayStrength(rayPos, finalRayDir, coord, 22.3991, 18.0234,
                            1.1 * raysSpeed);
 
-  fragColor = rays1 * 0.5 + rays2 * 0.4;
+  fragColor = rays1 * 0.6 + rays2 * 0.5; // Increased brightness for mobile
 
   if (noiseAmount > 0.0) {
     float n = noise(coord * 0.01 + iTime * 0.1);
     fragColor.rgb *= (1.0 - noiseAmount + noiseAmount * n);
   }
 
-  float brightness = 1.0 - (coord.y / iResolution.y);
-  fragColor.x *= 0.1 + brightness * 0.8;
-  fragColor.y *= 0.3 + brightness * 0.6;
-  fragColor.z *= 0.5 + brightness * 0.5;
+  // Enhanced brightness calculation for better mobile visibility
+  float brightness = 1.2 - (coord.y / iResolution.y); // Increased overall brightness
+  fragColor.x *= 0.2 + brightness * 0.9; // More intense red
+  fragColor.y *= 0.4 + brightness * 0.7; // More intense green  
+  fragColor.z *= 0.6 + brightness * 0.6; // More intense blue
 
   if (saturation != 1.0) {
     float gray = dot(fragColor.rgb, vec3(0.299, 0.587, 0.114));
@@ -253,14 +297,14 @@ void main() {
         rayDir: { value: [0, 1] },
 
         raysColor: { value: hexToRgb(raysColor) },
-        raysSpeed: { value: raysSpeed },
-        lightSpread: { value: lightSpread },
-        rayLength: { value: rayLength },
+        raysSpeed: { value: responsiveParams.raysSpeed },
+        lightSpread: { value: responsiveParams.lightSpread },
+        rayLength: { value: responsiveParams.rayLength },
         pulsating: { value: pulsating ? 1.0 : 0.0 },
-        fadeDistance: { value: fadeDistance },
+        fadeDistance: { value: responsiveParams.fadeDistance },
         saturation: { value: saturation },
         mousePos: { value: [0.5, 0.5] },
-        mouseInfluence: { value: mouseInfluence },
+        mouseInfluence: { value: responsiveParams.mouseInfluence },
         noiseAmount: { value: noiseAmount },
         distortion: { value: distortion },
       }
@@ -278,7 +322,8 @@ void main() {
       const updatePlacement = () => {
         if (!containerRef.current || !renderer) return
 
-        renderer.dpr = Math.min(window.devicePixelRatio, 2)
+        const currentResponsiveParams = getResponsiveParams()
+        renderer.dpr = currentResponsiveParams.dpr
 
         const { clientWidth: wCSS, clientHeight: hCSS } = containerRef.current
         renderer.setSize(wCSS, hCSS)
@@ -422,16 +467,50 @@ void main() {
       mouseRef.current = { x, y }
     }
 
+    const handleTouchMove = (e: TouchEvent) => {
+      if (!containerRef.current || !rendererRef.current) return
+      e.preventDefault()
+      const touch = e.touches[0]
+      const rect = containerRef.current.getBoundingClientRect()
+      const x = (touch.clientX - rect.left) / rect.width
+      const y = (touch.clientY - rect.top) / rect.height
+      mouseRef.current = { x, y }
+    }
+
+    const handleTouchStart = (e: TouchEvent) => {
+      if (!containerRef.current || !rendererRef.current) return
+      const touch = e.touches[0]
+      const rect = containerRef.current.getBoundingClientRect()
+      const x = (touch.clientX - rect.left) / rect.width
+      const y = (touch.clientY - rect.top) / rect.height
+      mouseRef.current = { x, y }
+    }
+
     if (followMouse) {
       window.addEventListener("mousemove", handleMouseMove)
-      return () => window.removeEventListener("mousemove", handleMouseMove)
+      window.addEventListener("touchmove", handleTouchMove, { passive: false })
+      window.addEventListener("touchstart", handleTouchStart, { passive: true })
+      
+      return () => {
+        window.removeEventListener("mousemove", handleMouseMove)
+        window.removeEventListener("touchmove", handleTouchMove)
+        window.removeEventListener("touchstart", handleTouchStart)
+      }
     }
   }, [followMouse])
 
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full pointer-events-none z-[3] overflow-hidden relative ${className}`.trim()}
+      className={`w-full h-full touch-none z-[3] overflow-hidden relative ${className}`.trim()}
+      style={{
+        // Ensure proper touch handling on mobile
+        touchAction: 'none',
+        // Improve performance on mobile
+        willChange: 'transform',
+        // Optimize rendering
+        backfaceVisibility: 'hidden',
+      }}
     />
   )
 }

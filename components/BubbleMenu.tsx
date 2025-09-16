@@ -37,30 +37,30 @@ const DEFAULT_ITEMS: MenuItem[] = [
     hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
   },
   {
-    label: 'about',
+    label: 'events',
     href: '#',
-    ariaLabel: 'About',
+    ariaLabel: 'Events',
     rotation: 8,
     hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' }
   },
   {
-    label: 'projects',
+    label: 'leaderboard',
     href: '#',
-    ariaLabel: 'Documentation',
+    ariaLabel: 'Leaderboard',
     rotation: 8,
     hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' }
   },
   {
-    label: 'blog',
+    label: 'photogallery',
     href: '#',
-    ariaLabel: 'Blog',
+    ariaLabel: 'Photo Gallery',
     rotation: 8,
     hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' }
   },
   {
-    label: 'contact',
+    label: 'updates',
     href: '#',
-    ariaLabel: 'Contact',
+    ariaLabel: 'Updates',
     rotation: -8,
     hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
   }
@@ -82,6 +82,7 @@ export default function BubbleMenu({
 }: BubbleMenuProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const overlayRef = useRef<HTMLDivElement>(null);
   const bubblesRef = useRef<HTMLAnchorElement[]>([]);
@@ -89,14 +90,27 @@ export default function BubbleMenu({
 
   const menuItems = items?.length ? items : DEFAULT_ITEMS;
 
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobileSize = window.innerWidth <= 768;
+      setIsMobile(isMobileSize);
+    };
+    
+    handleResize(); // Set initial value
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const containerClassName = [
     'bubble-menu',
     useFixedPosition ? 'fixed' : 'absolute',
-    'left-0 right-0 top-8',
+    'top-4 md:top-8',
+    'left-4 right-4 md:left-0 md:right-0',
     'flex items-center justify-between',
-    'gap-4 px-8',
+    'gap-2 px-0 md:gap-4 md:px-8',
     'pointer-events-none',
     'z-[1001]',
+    'md:max-w-screen-xl md:mx-auto',
     className
   ]
     .filter(Boolean)
@@ -184,6 +198,23 @@ export default function BubbleMenu({
     <>
       {/* Workaround for silly Tailwind capabilities */}
       <style>{`
+        .bubble-menu {
+          box-sizing: border-box;
+        }
+        @media (max-width: 768px) {
+          .bubble-menu {
+            left: 16px !important;
+            right: 16px !important;
+            top: max(16px, env(safe-area-inset-top)) !important;
+            width: calc(100vw - 32px) !important;
+            max-width: calc(100vw - 32px) !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .bubble-menu .bubble {
+            flex-shrink: 0;
+          }
+        }
         .bubble-menu .menu-line {
           transition: transform 0.3s ease, opacity 0.3s ease;
           transform-origin: center;
@@ -209,29 +240,64 @@ export default function BubbleMenu({
         }
         @media (max-width: 899px) {
           .bubble-menu-items {
-            padding-top: 120px;
-            align-items: flex-start;
+            padding: 0;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-height: 100vh;
+            min-height: 100svh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
           }
           .bubble-menu-items .pill-list {
             row-gap: 16px;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
           }
           .bubble-menu-items .pill-list .pill-col {
-            flex: 0 0 100% !important;
+            flex: 0 0 auto !important;
             margin-left: 0 !important;
             overflow: visible;
+            width: 100%;
+            max-width: 300px;
+            display: flex;
+            justify-content: center;
           }
           .bubble-menu-items .pill-link {
-            font-size: clamp(1.2rem, 3vw, 4rem);
-            padding: clamp(1rem, 2vw, 2rem) 0;
-            min-height: 80px !important;
+            font-size: 1.25rem;
+            padding: 1rem 2rem;
+            min-height: 60px !important;
+            border-radius: 15px;
+            width: 100%;
+            text-align: center;
+            background: white;
+            color: black;
+            border: none;
+            backdrop-filter: none;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
           }
           .bubble-menu-items .pill-link:hover {
-            transform: scale(1.06);
-            background: var(--hover-bg);
-            color: var(--hover-color);
+            transform: scale(1.05);
+            background: var(--hover-bg, #f3f4f6);
+            color: var(--hover-color, black);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
           }
           .bubble-menu-items .pill-link:active {
-            transform: scale(.94);
+            transform: scale(0.98);
           }
         }
       `}</style>
@@ -241,33 +307,31 @@ export default function BubbleMenu({
           className={[
             'bubble logo-bubble',
             'inline-flex items-center justify-center',
-            'rounded-full',
-            'bg-white',
-            'shadow-[0_4px_16px_rgba(0,0,0,0.12)]',
             'pointer-events-auto',
-            'h-12 md:h-14',
-            'px-4 md:px-8',
-            'gap-2',
-            'will-change-transform'
+            'h-10 w-10 md:h-16 md:w-16 lg:h-20 lg:w-20',
+            'will-change-transform',
+            'bg-white/10 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none',
+            'rounded-full border border-white/20 md:border-none',
+            'shadow-lg md:shadow-none',
+            'flex-shrink-0'
           ].join(' ')}
           aria-label="Logo"
           style={{
-            background: menuBg,
-            minHeight: '48px',
-            borderRadius: '9999px'
+            minHeight: '40px',
+            minWidth: '40px'
           }}
         >
           <span
-            className={['logo-content', 'inline-flex items-center justify-center', 'w-[120px] h-full'].join(' ')}
+            className={['logo-content', 'inline-flex items-center justify-center', 'w-full h-full'].join(' ')}
             style={
               {
-                ['--logo-max-height']: '60%',
+                ['--logo-max-height']: '100%',
                 ['--logo-max-width']: '100%'
               } as CSSProperties
             }
           >
             {typeof logo === 'string' ? (
-              <img src={logo} alt="Logo" className="bubble-logo max-h-[60%] max-w-full object-contain block" />
+              <img src={logo} alt="Logo" className="bubble-logo w-full h-full object-cover rounded-full shadow-lg" />
             ) : (
               logo
             )}
@@ -281,35 +345,42 @@ export default function BubbleMenu({
             isMenuOpen ? 'open' : '',
             'inline-flex flex-col items-center justify-center',
             'rounded-full',
-            'bg-white',
+            'bg-white/95 backdrop-blur-sm',
             'shadow-[0_4px_16px_rgba(0,0,0,0.12)]',
             'pointer-events-auto',
-            'w-12 h-12 md:w-14 md:h-14',
+            'w-10 h-10 md:w-14 md:h-14',
             'border-0 cursor-pointer p-0',
-            'will-change-transform'
+            'will-change-transform',
+            'hover:scale-105 active:scale-95 transition-transform duration-200',
+            'border border-white/20 md:border-none',
+            'flex-shrink-0'
           ].join(' ')}
           onClick={handleToggle}
           aria-label={menuAriaLabel}
           aria-pressed={isMenuOpen}
-          style={{ background: menuBg }}
+          style={{ 
+            background: `${menuBg}f0`,
+            minHeight: '40px',
+            minWidth: '40px'
+          }}
         >
           <span
             className="menu-line block mx-auto rounded-[2px]"
             style={{
-              width: 26,
+              width: isMobile ? 18 : 26,
               height: 2,
               background: menuContentColor,
-              transform: isMenuOpen ? 'translateY(4px) rotate(45deg)' : 'none'
+              transform: isMenuOpen ? 'translateY(2.5px) rotate(45deg)' : 'none'
             }}
           />
           <span
             className="menu-line short block mx-auto rounded-[2px]"
             style={{
-              marginTop: '6px',
-              width: 26,
+              marginTop: isMobile ? '4px' : '6px',
+              width: isMobile ? 18 : 26,
               height: 2,
               background: menuContentColor,
-              transform: isMenuOpen ? 'translateY(-4px) rotate(-45deg)' : 'none'
+              transform: isMenuOpen ? 'translateY(-2.5px) rotate(-45deg)' : 'none'
             }}
           />
         </button>
@@ -327,6 +398,13 @@ export default function BubbleMenu({
             'z-[1000]'
           ].join(' ')}
           aria-hidden={!isMenuOpen}
+          onClick={(e) => {
+            // Close menu when clicking on overlay (mobile)
+            if (e.target === e.currentTarget && isMobile) {
+              handleToggle();
+            }
+          }}
+          style={{ pointerEvents: isMenuOpen ? 'auto' : 'none' }}
         >
           <ul
             className={[
@@ -372,16 +450,22 @@ export default function BubbleMenu({
                   style={
                     {
                       ['--item-rot']: `${item.rotation ?? 0}deg`,
-                      ['--pill-bg']: menuBg,
-                      ['--pill-color']: menuContentColor,
-                      ['--hover-bg']: item.hoverStyles?.bgColor || '#f3f4f6',
-                      ['--hover-color']: item.hoverStyles?.textColor || menuContentColor,
-                      background: 'var(--pill-bg)',
-                      color: 'var(--pill-color)',
+                      ['--pill-bg']: isMobile ? 'white' : menuBg,
+                      ['--pill-color']: isMobile ? 'black' : menuContentColor,
+                      ['--hover-bg']: item.hoverStyles?.bgColor || (isMobile ? '#f3f4f6' : '#f3f4f6'),
+                      ['--hover-color']: item.hoverStyles?.textColor || (isMobile ? 'black' : menuContentColor),
+                      background: isMobile ? 'white' : 'var(--pill-bg)',
+                      color: isMobile ? 'black' : 'var(--pill-color)',
+                      border: isMobile ? 'none' : 'none',
+                      backdropFilter: isMobile ? 'none' : 'none',
+                      boxShadow: isMobile ? '0 4px 16px rgba(0, 0, 0, 0.15)' : 'none',
+                      borderRadius: isMobile ? '15px' : 'var(--pill-radius, 999px)',
                       minHeight: 'var(--pill-min-h, 160px)',
                       padding: 'clamp(1.5rem, 3vw, 8rem) 0',
                       fontSize: 'clamp(1.5rem, 4vw, 4rem)',
-                      fontWeight: 400,
+                      fontWeight: 700,
+                      fontFamily: "'Inter', 'Segoe UI', 'Roboto', system-ui, sans-serif",
+                      letterSpacing: '0.02em',
                       lineHeight: 0,
                       willChange: 'transform',
                       height: 10
@@ -392,11 +476,14 @@ export default function BubbleMenu({
                   }}
                 >
                   <span
-                    className="pill-label inline-block"
+                    className="pill-label inline-block font-bold"
                     style={{
                       willChange: 'transform, opacity',
                       height: '1.2em',
-                      lineHeight: 1.2
+                      lineHeight: 1.2,
+                      fontFamily: "'Inter', 'Segoe UI', 'Roboto', system-ui, sans-serif",
+                      letterSpacing: '0.025em',
+                      textTransform: 'capitalize'
                     }}
                     ref={el => {
                       if (el) labelRefs.current[idx] = el;

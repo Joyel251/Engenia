@@ -42,6 +42,11 @@ export async function POST(req) {
       data: { points: { increment: pointsForPosition } },
     });
 
+    await prisma.event.update({
+      where: { id: eventId },
+      data: { status: 'COMPLETED'},
+    });
+
     return new Response(JSON.stringify(newWinner), { status: 201 });
   } catch (error) {
     console.error(error);

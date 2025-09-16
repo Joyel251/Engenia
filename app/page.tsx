@@ -11,15 +11,27 @@ export default function SplashScreen() {
   const [showNavigationPrompt, setShowNavigationPrompt] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
+    // Detect mobile device
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
     // Show logo with delay
     const logoTimer = setTimeout(() => {
       setShowLogo(true);
     }, 500);
 
-    return () => clearTimeout(logoTimer);
+    return () => {
+      clearTimeout(logoTimer);
+      window.removeEventListener('resize', checkMobile);
+    };
   }, []);
 
   const handleAnimationComplete = () => {
@@ -44,17 +56,17 @@ export default function SplashScreen() {
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-black">
       {/* Static Logo with College Name */}
-      <div className={`absolute top-8 left-8 z-20 transition-all duration-1000 ease-out ${
+      <div className={`absolute top-4 sm:top-8 left-4 sm:left-8 z-20 transition-all duration-1000 ease-out ${
         showLogo 
           ? 'opacity-100 transform translate-y-0 scale-100' 
           : 'opacity-0 transform -translate-y-8 scale-90'
       }`}>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="relative group">
             <img 
               src="/logo.jpg" 
               alt="ENGENIA Logo" 
-              className="w-16 h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover shadow-2xl hover:scale-110 transition-transform duration-300 border-2 border-white/20 hover:border-white/40"
+              className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover shadow-2xl hover:scale-110 transition-transform duration-300 border-2 border-white/20 hover:border-white/40"
               style={{
                 filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))'
               }}
@@ -66,12 +78,12 @@ export default function SplashScreen() {
           <div className="flex flex-col">
             <ShinyText 
               text="Loyola-ICAM College of"
-              className="text-white text-lg md:text-xl lg:text-2xl font-bold tracking-wide"
+              className="text-white text-sm sm:text-lg md:text-xl lg:text-2xl font-bold tracking-wide"
               speed={3}
             />
             <ShinyText 
               text="Engineering and Technology"
-              className="text-white text-lg md:text-xl lg:text-2xl font-bold tracking-wide mt-1"
+              className="text-white text-sm sm:text-lg md:text-xl lg:text-2xl font-bold tracking-wide mt-1"
               speed={3}
             />
           </div>
@@ -84,14 +96,14 @@ export default function SplashScreen() {
           raysOrigin="top-center"
           raysColor="#FFFFFF"
           raysSpeed={1.2}
-          lightSpread={1.8}
-          rayLength={2.5}
+          lightSpread={isMobile ? 2.5 : 1.8}
+          rayLength={isMobile ? 3.0 : 2.5}
           followMouse={true}
-          mouseInfluence={0.2}
+          mouseInfluence={isMobile ? 0.3 : 0.2}
           noiseAmount={0}
           distortion={0.05}
           pulsating={false}
-          fadeDistance={0.7}
+          fadeDistance={isMobile ? 0.8 : 0.7}
           saturation={1.1}
           className="w-full h-full"
         />
@@ -103,8 +115,8 @@ export default function SplashScreen() {
         onClick={showNavigationPrompt ? handleNavigation : undefined}
       >
         {/* Centered title */}
-        <div className="h-full flex items-center justify-center">
-          <div className="text-center px-4">
+        <div className="h-full flex items-center justify-center px-4">
+          <div className="text-center">
             {!showShinyText ? (
               <BlurText
                 text="ENGENIA 2K25"
@@ -112,7 +124,7 @@ export default function SplashScreen() {
                 animateBy="letters"
                 direction="top"
                 onAnimationComplete={handleAnimationComplete}
-                className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-heading font-black text-white tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"
+                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-heading font-black text-white tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"
                 stepDuration={0.4}
                 easing={(t: number) => 1 - Math.pow(1 - t, 3)}
                 threshold={0.1}
@@ -122,15 +134,17 @@ export default function SplashScreen() {
                 text="ENGENIA 2K25"
                 disabled={false}
                 speed={3}
-                className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-heading font-black tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"
+                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-heading font-black tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"
               />
             )}
           </div>
         </div>
 
-        {/* Bottom navigation prompt */}
+        {/* Bottom navigation prompt - moved up for mobile */}
         {showNavigationPrompt && (
-          <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-fade-in">
+          <div className={`absolute left-1/2 transform -translate-x-1/2 animate-fade-in ${
+            isMobile ? 'bottom-20 sm:bottom-16' : 'bottom-12'
+          }`}>
             {/* Animated dots */}
             <div className="flex justify-center items-center space-x-2 mb-4">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
@@ -138,8 +152,8 @@ export default function SplashScreen() {
               <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
             </div>
             
-            <p className="text-white/60 text-sm tracking-widest uppercase text-center">
-              Click Anywhere to Continue
+            <p className="text-white/60 text-xs sm:text-sm tracking-widest uppercase text-center">
+              {isMobile ? 'Tap Anywhere to Continue' : 'Click Anywhere to Continue'}
             </p>
           
           </div>

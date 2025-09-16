@@ -1,5 +1,8 @@
 import prisma from '../../../lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(req) {
   const achievements = await prisma.achievement.findMany({
     include: { department: true },

@@ -1,13 +1,10 @@
 "use client"
-
-import LightRays from "@/components/light-rays"
 import BlurText from "@/components/blur-text"
 import ShinyText from "@/components/shiny-text"
 import BubbleMenu from "@/components/BubbleMenu"
-import ScrollArrow from "@/components/ScrollArrow"
 import LocomotiveScrollProvider from "@/components/locomotive-scroll-provider"
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { motion, useReducedMotion } from "framer-motion"
 import { MapPin, Users, Music, Mic, Palette, Film, BookOpen, Award, Zap, Heart } from "lucide-react"
 
 const menuItems = [
@@ -51,6 +48,10 @@ const menuItems = [
 export default function LandingPage() {
   const [showShinyText, setShowShinyText] = useState(false)
   const [mounted, setMounted] = useState(false)
+  const [showScrollHint, setShowScrollHint] = useState(true)
+  const heroRef = useRef<HTMLElement | null>(null)
+  const prefersReducedMotion = useReducedMotion()
+  const [isMobile, setIsMobile] = useState(false)
 
   useEffect(() => {
     setMounted(true)
@@ -59,6 +60,29 @@ export default function LandingPage() {
   const handleAnimationComplete = () => {
     setShowShinyText(true)
   }
+
+  useEffect(() => {
+    // Detect mobile/coarse pointer once on mount
+    const coarse = typeof window !== 'undefined' && (matchMedia('(pointer: coarse)').matches || window.innerWidth < 768)
+    setIsMobile(!!coarse)
+
+    // Use rAF to track hero position; works with native and Locomotive scrolling
+    const threshold = 150
+    let raf = 0
+    let last = showScrollHint
+    const tick = () => {
+      const top = heroRef.current?.getBoundingClientRect().top ?? 0
+      const y = Math.max(0, -top)
+      const next = y < threshold
+      if (next !== last) {
+        last = next
+        setShowScrollHint(next)
+      }
+      raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [])
 
   if (!mounted) {
     return null
@@ -79,33 +103,31 @@ export default function LandingPage() {
         staggerDelay={0.1} 
       />
       
-      <div className="bg-black text-white">
-        {/* Hero Section */}
-        <section className="relative min-h-screen w-full overflow-hidden">
-          <div className="absolute inset-0 z-0 pointer-events-none">
-            <LightRays className="w-full h-full pointer-events-none" />
-          </div>
-
+      <div className="relative bg-black text-white">
+        {/* Foreground content wrapper to ensure above background */}
+        <div className="relative z-10">
+  {/* Hero Section */}
+        <section ref={heroRef} className="relative min-h-screen w-full overflow-hidden">
           <div className="absolute inset-0 z-5 pointer-events-none">
-            {[...Array(12)].map((_, i) => (
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 5 : 12))].map((_, i) => (
               <motion.div
                 key={i}
-                className="absolute bg-white/8 backdrop-blur-sm border border-white/15 rounded-lg"
+                className={`absolute bg-white/8 ${isMobile ? '' : 'backdrop-blur-sm'} border border-white/15 rounded-lg`}
                 style={{
-                  width: `${12 + (i % 4) * 8}px`,
-                  height: `${12 + (i % 4) * 8}px`,
+                  width: `${12 + (i % 4) * (isMobile ? 4 : 8)}px`,
+                  height: `${12 + (i % 4) * (isMobile ? 4 : 8)}px`,
                   left: `${5 + i * 8}%`,
                   top: `${10 + (i % 5) * 18}%`,
                 }}
                 animate={{
                   opacity: [0, 0.7, 0],
-                  scale: [0.6, 1.4, 0.6],
-                  rotate: [0, 180, 360],
-                  x: [0, i % 2 === 0 ? 50 : -50, 0],
-                  y: [0, i % 3 === 0 ? -30 : 30, 0],
+                  scale: prefersReducedMotion ? 1 : [0.7, (isMobile ? 1.1 : 1.4), 0.7],
+                  rotate: prefersReducedMotion ? 0 : [0, 180, 360],
+                  x: prefersReducedMotion ? 0 : [0, i % 2 === 0 ? (isMobile ? 15 : 50) : (isMobile ? -15 : -50), 0],
+                  y: prefersReducedMotion ? 0 : [0, i % 3 === 0 ? (isMobile ? -12 : -30) : (isMobile ? 12 : 30), 0],
                 }}
                 transition={{
-                  duration: 5 + i * 0.4,
+                  duration: (isMobile ? 4 : 5) + i * 0.3,
                   repeat: Infinity,
                   delay: i * 0.6,
                   ease: "easeInOut",
@@ -146,32 +168,40 @@ export default function LandingPage() {
               </motion.div>
             )}
           </div>
+
+          {/* Scroll hint (blinks; hides after scroll, shows near top) */}
+          {showScrollHint && (
+            <div
+              className="absolute left-1/2 -translate-x-1/2 z-20 text-white/70 text-sm tracking-widest uppercase pointer-events-none animate-pulse select-none"
+              style={{ bottom: `calc(env(safe-area-inset-bottom, 0px) + ${isMobile ? 96 : 24}px)` }}
+            >
+              Scroll to explore
+            </div>
+          )}
         </section>
 
-        {/* Floating Scroll Arrow */}
-        <ScrollArrow hideAfterScroll={300} />
 
         {/* About Section */}
         <section className="min-h-screen flex items-center justify-center py-20 relative">
           <div className="absolute inset-0 pointer-events-none">
-            {[...Array(8)].map((_, i) => (
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 3 : 8))].map((_, i) => (
               <motion.div
                 key={`about-${i}`}
-                className="absolute bg-white/6 backdrop-blur-sm border border-purple-400/20 rounded-xl"
+                className={`absolute bg-white/6 ${isMobile ? '' : 'backdrop-blur-sm'} border border-purple-400/20 rounded-xl`}
                 style={{
-                  width: `${16 + (i % 3) * 12}px`,
-                  height: `${16 + (i % 3) * 12}px`,
+                  width: `${16 + (i % 3) * (isMobile ? 8 : 12)}px`,
+                  height: `${16 + (i % 3) * (isMobile ? 8 : 12)}px`,
                   right: `${8 + i * 12}%`,
                   top: `${15 + (i % 4) * 20}%`,
                 }}
                 animate={{
                   opacity: [0, 0.5, 0],
-                  x: [-30, 30, -30],
-                  rotate: [0, 120, 240],
-                  scale: [0.8, 1.3, 0.8],
+                  x: prefersReducedMotion ? 0 : [-(isMobile ? 10 : 30), (isMobile ? 10 : 30), -(isMobile ? 10 : 30)],
+                  rotate: prefersReducedMotion ? 0 : [0, 120, 240],
+                  scale: prefersReducedMotion ? 1 : [0.9, (isMobile ? 1.15 : 1.3), 0.9],
                 }}
                 transition={{
-                  duration: 7 + i * 0.4,
+                  duration: (isMobile ? 6 : 7) + i * 0.3,
                   repeat: Infinity,
                   delay: i * 1.1,
                   ease: "easeInOut",
@@ -184,9 +214,9 @@ export default function LandingPage() {
             <div className="max-w-4xl mx-auto text-center">
               <motion.div 
                 className="mb-12"
-                initial={{ opacity: 0, x: -100 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 1, delay: 0.2 }}
+                initial={isMobile ? { y: 16 } : { opacity: 0, x: -100 }}
+                whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
+                transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
                 viewport={{ once: false }}
               >
                 <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white font-mono">About EnGenia</h2>
@@ -208,58 +238,102 @@ export default function LandingPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
                 <motion.div
                   className="p-6 bg-gradient-to-br from-purple-500/10 to-violet-600/10 backdrop-blur-sm rounded-2xl border border-purple-400/20 hover:border-purple-400/40 transition-all duration-500"
-                  initial={{ opacity: 0, x: -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.1 }}
+                  initial={isMobile ? { y: 16 } : { opacity: 0, x: -50 }}
+                  whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
+                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.1 } : { duration: 0.8, delay: 0.1 }}
                   viewport={{ once: false }}
                 >
-                  <BookOpen className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-3 text-white font-mono">Academic Excellence</h3>
-                  <p className="text-gray-400 text-sm font-serif">
+                  <motion.div
+                    initial={isMobile ? { x: -12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.15 } : {}}
+                  >
+                    <BookOpen className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-3 text-white font-mono">Academic Excellence</h3>
+                  </motion.div>
+                  <motion.p
+                    className="text-gray-400 text-sm font-serif"
+                    initial={isMobile ? { x: 12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.22 } : {}}
+                  >
                     Preparing students with value-added courses and skill-based training
-                  </p>
+                  </motion.p>
                 </motion.div>
 
                 <motion.div
                   className="p-6 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 backdrop-blur-sm rounded-2xl border border-blue-400/20 hover:border-blue-400/40 transition-all duration-500"
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.3 }}
+                  initial={isMobile ? { y: 16 } : { opacity: 0, y: 50 }}
+                  whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
+                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.3 } : { duration: 0.8, delay: 0.3 }}
                   viewport={{ once: false }}
                 >
-                  <Zap className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-3 text-white font-mono">Professionalism</h3>
-                  <p className="text-gray-400 text-sm font-serif">
+                  <motion.div
+                    initial={isMobile ? { x: -12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.35 } : {}}
+                  >
+                    <Zap className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-3 text-white font-mono">Professionalism</h3>
+                  </motion.div>
+                  <motion.p
+                    className="text-gray-400 text-sm font-serif"
+                    initial={isMobile ? { x: 12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.42 } : {}}
+                  >
                     Excelling through interaction and integration with industries
-                  </p>
+                  </motion.p>
                 </motion.div>
 
                 <motion.div
                   className="p-6 bg-gradient-to-br from-pink-500/10 to-rose-600/10 backdrop-blur-sm rounded-2xl border border-pink-400/20 hover:border-pink-400/40 transition-all duration-500"
-                  initial={{ opacity: 0, y: 50 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.8, delay: 0.5 }}
+                  initial={isMobile ? { y: 16 } : { opacity: 0, y: 50 }}
+                  whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
+                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.5 } : { duration: 0.8, delay: 0.5 }}
                   viewport={{ once: false }}
                 >
-                  <Heart className="w-12 h-12 text-pink-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-3 text-white font-mono">Holistic Formation</h3>
-                  <p className="text-gray-400 text-sm font-serif">
+                  <motion.div
+                    initial={isMobile ? { x: -12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.55 } : {}}
+                  >
+                    <Heart className="w-12 h-12 text-pink-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-3 text-white font-mono">Holistic Formation</h3>
+                  </motion.div>
+                  <motion.p
+                    className="text-gray-400 text-sm font-serif"
+                    initial={isMobile ? { x: 12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.62 } : {}}
+                  >
                     Overall growth through sports and cultural activities
-                  </p>
+                  </motion.p>
                 </motion.div>
 
                 <motion.div
                   className="p-6 bg-gradient-to-br from-amber-500/10 to-orange-600/10 backdrop-blur-sm rounded-2xl border border-amber-400/20 hover:border-amber-400/40 transition-all duration-500"
-                  initial={{ opacity: 0, x: 50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: 0.7 }}
+                  initial={isMobile ? { y: 16 } : { opacity: 0, x: 50 }}
+                  whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
+                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.7 } : { duration: 0.8, delay: 0.7 }}
                   viewport={{ once: false }}
                 >
-                  <Award className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-3 text-white font-mono">International Exposure</h3>
-                  <p className="text-gray-400 text-sm font-serif">
+                  <motion.div
+                    initial={isMobile ? { x: -12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.75 } : {}}
+                  >
+                    <Award className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+                    <h3 className="text-xl font-bold mb-3 text-white font-mono">International Exposure</h3>
+                  </motion.div>
+                  <motion.p
+                    className="text-gray-400 text-sm font-serif"
+                    initial={isMobile ? { x: 12 } : {}}
+                    whileInView={isMobile ? { x: 0 } : {}}
+                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.82 } : {}}
+                  >
                     World-class exposure through university collaborations
-                  </p>
+                  </motion.p>
                 </motion.div>
               </div>
             </div>
@@ -269,24 +343,24 @@ export default function LandingPage() {
         {/* Departments Section */}
         <section className="min-h-screen py-20 relative">
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(15)].map((_, i) => (
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 5 : 15))].map((_, i) => (
               <motion.div
                 key={`dept-${i}`}
-                className="absolute bg-white/4 backdrop-blur-sm border border-white/10 rounded-lg"
+                className={`absolute bg-white/4 ${isMobile ? '' : 'backdrop-blur-sm'} border border-white/10 rounded-lg`}
                 style={{
-                  width: `${8 + (i % 5) * 4}px`,
-                  height: `${8 + (i % 5) * 4}px`,
+                  width: `${8 + (i % 5) * (isMobile ? 2 : 4)}px`,
+                  height: `${8 + (i % 5) * (isMobile ? 2 : 4)}px`,
                   left: `${-5 + i * 7}%`,
                   top: `${2 + (i % 6) * 15}%`,
                 }}
                 animate={{
-                  x: [0, 150, 300],
+                  x: prefersReducedMotion ? 0 : [0, (isMobile ? 60 : 150), (isMobile ? 120 : 300)],
                   opacity: [0, 0.8, 0],
-                  rotate: [0, 180, 360],
-                  scale: [0.5, 1.2, 0.5],
+                  rotate: prefersReducedMotion ? 0 : [0, 180, 360],
+                  scale: prefersReducedMotion ? 1 : [0.6, (isMobile ? 1.05 : 1.2), 0.6],
                 }}
                 transition={{
-                  duration: 10 + i * 0.3,
+                  duration: (isMobile ? 8 : 10) + i * 0.2,
                   repeat: Infinity,
                   delay: i * 0.4,
                   ease: "linear",
@@ -298,9 +372,9 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <motion.div 
               className="text-center mb-20"
-              initial={{ opacity: 0, y: -50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2 }}
+              initial={isMobile ? { y: 16 } : { opacity: 0, y: -50 }}
+              whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
+              transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
               viewport={{ once: false }}
             >
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 font-mono">
@@ -362,24 +436,24 @@ export default function LandingPage() {
         {/* Events Section */}
         <section className="min-h-screen py-20 bg-gradient-to-b from-black via-purple-950/20 to-black relative">
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(20)].map((_, i) => (
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 6 : 20))].map((_, i) => (
               <motion.div
                 key={`events-${i}`}
-                className="absolute bg-white/4 backdrop-blur-sm border border-white/10 rounded-lg"
+                className={`absolute bg-white/4 ${isMobile ? '' : 'backdrop-blur-sm'} border border-white/10 rounded-lg`}
                 style={{
-                  width: `${6 + (i % 4) * 3}px`,
-                  height: `${6 + (i % 4) * 3}px`,
+                  width: `${6 + (i % 4) * (isMobile ? 2 : 3)}px`,
+                  height: `${6 + (i % 4) * (isMobile ? 2 : 3)}px`,
                   left: `${Math.random() * 100}%`,
                   top: `${Math.random() * 100}%`,
                 }}
                 animate={{
-                  y: [-20, 20, -20],
+                  y: prefersReducedMotion ? 0 : [-(isMobile ? 8 : 20), (isMobile ? 8 : 20), -(isMobile ? 8 : 20)],
                   opacity: [0, 0.6, 0],
-                  rotate: [0, 360],
-                  scale: [0.5, 1.5, 0.5],
+                  rotate: prefersReducedMotion ? 0 : [0, 360],
+                  scale: prefersReducedMotion ? 1 : [0.7, (isMobile ? 1.2 : 1.5), 0.7],
                 }}
                 transition={{
-                  duration: 8 + i * 0.2,
+                  duration: (isMobile ? 6 : 8) + i * 0.15,
                   repeat: Infinity,
                   delay: i * 0.3,
                   ease: "easeInOut",
@@ -391,9 +465,9 @@ export default function LandingPage() {
           <div className="container mx-auto px-4">
             <motion.div 
               className="text-center mb-20"
-              initial={{ opacity: 0, scale: 0.8 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 1, delay: 0.2 }}
+              initial={isMobile ? { y: 16 } : { opacity: 0, scale: 0.8 }}
+              whileInView={isMobile ? { y: 0 } : { opacity: 1, scale: 1 }}
+              transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
               viewport={{ once: false }}
             >
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 font-mono">Featured Events</h2>
@@ -481,7 +555,7 @@ export default function LandingPage() {
         {/* Experience Section */}
         <section className="min-h-screen flex items-center justify-center py-20 relative">
           <div className="absolute inset-0 pointer-events-none">
-            {[...Array(25)].map((_, i) => (
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 8 : 25))].map((_, i) => (
               <motion.div
                 key={`experience-${i}`}
                 className="absolute w-1 h-1 bg-white/15 rounded-full"
@@ -491,11 +565,11 @@ export default function LandingPage() {
                 }}
                 animate={{
                   opacity: [0, 1, 0],
-                  scale: [0, 2, 0],
-                  y: [-20, 20, -20],
+                  scale: prefersReducedMotion ? 1 : [0, (isMobile ? 1.2 : 2), 0],
+                  y: prefersReducedMotion ? 0 : [-(isMobile ? 8 : 20), (isMobile ? 8 : 20), -(isMobile ? 8 : 20)],
                 }}
                 transition={{
-                  duration: 4 + Math.random() * 3,
+                  duration: (isMobile ? 3 : 4) + Math.random() * (isMobile ? 2 : 3),
                   repeat: Infinity,
                   delay: Math.random() * 4,
                   ease: "easeInOut",
@@ -507,9 +581,9 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 text-center">
             <motion.div 
               className="mb-12"
-              initial={{ opacity: 0, y: -30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 1, delay: 0.2 }}
+              initial={isMobile ? { y: 16 } : { opacity: 0, y: -30 }}
+              whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
+              transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
               viewport={{ once: false }}
             >
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 font-mono">
@@ -557,6 +631,7 @@ export default function LandingPage() {
             </motion.div>
           </div>
         </section>
+      </div>
       </div>
     </LocomotiveScrollProvider>
   )

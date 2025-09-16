@@ -1,5 +1,9 @@
 import prisma from '../../../lib/prisma';
 
+// Force dynamic execution and Node.js runtime for Prisma-backed API
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(req) {
   const settings = await prisma.settings.findMany();
   return new Response(JSON.stringify(settings), { status: 200 });

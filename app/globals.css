@@ -85,6 +85,20 @@
   body {
     @apply bg-background text-foreground;
   }
+  /* Ensure native scrolling on real touch devices */
+  @media (pointer: coarse) {
+    html, body {
+      overflow-y: auto !important;
+      overflow-x: hidden;
+      height: auto;
+      -webkit-overflow-scrolling: touch;
+      touch-action: pan-y;
+    }
+    /* If any data-scroll container exists, don't lock overflow on touch */
+    [data-scroll-container] {
+      overflow: visible !important;
+    }
+  }
   /* Added heading font utility class */
   .font-heading {
     font-family: var(--font-space-grotesk);

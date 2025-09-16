@@ -1,5 +1,8 @@
 import prisma from '../../../../lib/prisma';
 
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
 export async function GET(req, { params }) {
   const { id } = params;
   const dept = await prisma.department.findUnique({

@@ -11,25 +11,23 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+  // ✅ Authentication is now handled by middleware.js - no need for adminAuth here
   try {
     const body = await req.json();
     const { eventId, deptId, position, studentName } = body;
 
-    if (!eventId || !deptId || !position) {
-      return new Response(JSON.stringify({ error: 'eventId, deptId, and position required' }), { status: 400 });
+    if (!eventId || !deptId || !position || !studentName) {
+      return new Response(JSON.stringify({ error: 'eventId, deptId, position, and studentName required' }), { status: 400 });
     }
 
     // 1️⃣ Fetch event to get points mapping
-    const event = await prisma.event.findUnique({
-      where: { id: eventId },
-    });
-
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
     if (!event) {
       return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
     }
 
     // 2️⃣ Get points for the winner based on position
-    const pointsForPosition = event.points[position] || 0;
+    let pointsForPosition = event.points[position] || 0;
 
     // 3️⃣ Create winner
     const newWinner = await prisma.winner.create({
@@ -37,14 +35,18 @@ export async function POST(req) {
     });
 
     // 4️⃣ Update department points
+    const dept = await prisma.department.findUnique({ where: { id: deptId } });
+    const newPoints = Math.max((dept?.points || 0) + pointsForPosition, 0); // no negative points
+
     await prisma.department.update({
       where: { id: deptId },
-      data: { points: { increment: pointsForPosition } },
+      data: { points: newPoints },
     });
 
+    // 5️⃣ Mark event as completed
     await prisma.event.update({
       where: { id: eventId },
-      data: { status: 'COMPLETED'},
+      data: { status: 'COMPLETED' },
     });
 
     return new Response(JSON.stringify(newWinner), { status: 201 });

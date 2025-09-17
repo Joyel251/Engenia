@@ -59,6 +59,13 @@ model Settings {
   lockdown           Boolean @default(false)
 }
 
+model Admin {
+  id       String @id @default(cuid())
+  username String @unique
+  password String // hashed password
+}
+
+
 enum EventStatus {
   UPCOMING
   ONGOING

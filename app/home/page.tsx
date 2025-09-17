@@ -10,14 +10,14 @@ import { MapPin, Users, Music, Mic, Palette, Film, BookOpen, Award, Zap, Heart }
 const menuItems = [
   {
     label: 'home',
-    href: '#',
+    href: '/',
     ariaLabel: 'Home',
     rotation: -8,
     hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
   },
   {
     label: 'events',
-    href: '#',
+    href: '/events',
     ariaLabel: 'Events',
     rotation: 8,
     hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' }
@@ -140,13 +140,13 @@ export default function LandingPage() {
             <div className="text-center px-4">
               {!showShinyText ? (
                 <BlurText
-                  text="ENGENIA 2K25"
+                  text="ENGENIA 2025"
                   onAnimationComplete={handleAnimationComplete}
                   className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-white tracking-[0.15em] drop-shadow-2xl leading-[0.85] select-none font-mono"
                 />
               ) : (
                 <ShinyText
-                  text="ENGENIA 2K25"
+                  text="ENGENIA 2025"
                   className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black tracking-[0.15em] drop-shadow-2xl leading-[0.85] select-none font-mono"
                 />
               )}
@@ -181,164 +181,245 @@ export default function LandingPage() {
         </section>
 
 
-        {/* About Section */}
-        <section className="min-h-screen flex items-center justify-center py-20 relative">
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 3 : 8))].map((_, i) => (
-              <motion.div
-                key={`about-${i}`}
-                className={`absolute bg-white/6 ${isMobile ? '' : 'backdrop-blur-sm'} border border-purple-400/20 rounded-xl`}
-                style={{
-                  width: `${16 + (i % 3) * (isMobile ? 8 : 12)}px`,
-                  height: `${16 + (i % 3) * (isMobile ? 8 : 12)}px`,
-                  right: `${8 + i * 12}%`,
-                  top: `${15 + (i % 4) * 20}%`,
-                }}
-                animate={{
-                  opacity: [0, 0.5, 0],
-                  x: prefersReducedMotion ? 0 : [-(isMobile ? 10 : 30), (isMobile ? 10 : 30), -(isMobile ? 10 : 30)],
-                  rotate: prefersReducedMotion ? 0 : [0, 120, 240],
-                  scale: prefersReducedMotion ? 1 : [0.9, (isMobile ? 1.15 : 1.3), 0.9],
-                }}
-                transition={{
-                  duration: (isMobile ? 6 : 7) + i * 0.3,
-                  repeat: Infinity,
-                  delay: i * 1.1,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
+      
+{/* About Section */}
+<section className="min-h-screen flex items-center justify-center py-20 relative">
+  <div className="absolute inset-0 pointer-events-none">
+    {[...Array(prefersReducedMotion ? 0 : (isMobile ? 3 : 8))].map((_, i) => (
+      <motion.div
+        key={`about-${i}`}
+        className={`absolute bg-white/6 ${isMobile ? '' : 'backdrop-blur-sm'} border border-purple-400/20 rounded-xl`}
+        style={{
+          width: `${16 + (i % 3) * (isMobile ? 8 : 12)}px`,
+          height: `${16 + (i % 3) * (isMobile ? 8 : 12)}px`,
+          right: `${8 + i * 12}%`,
+          top: `${15 + (i % 4) * 20}%`,
+        }}
+        animate={{
+          opacity: [0, 0.5, 0],
+          x: prefersReducedMotion ? 0 : [-(isMobile ? 10 : 30), (isMobile ? 10 : 30), -(isMobile ? 10 : 30)],
+          rotate: prefersReducedMotion ? 0 : [0, 120, 240],
+          scale: prefersReducedMotion ? 1 : [0.9, (isMobile ? 1.15 : 1.3), 0.9],
+        }}
+        transition={{
+          duration: (isMobile ? 6 : 7) + i * 0.3,
+          repeat: Infinity,
+          delay: i * 1.1,
+          ease: "easeInOut",
+        }}
+      />
+    ))}
+  </div>
 
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <motion.div 
-                className="mb-12"
-                initial={isMobile ? { y: 16 } : { opacity: 0, x: -100 }}
-                whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
-                transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
-                viewport={{ once: false }}
-              >
-                <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white font-mono">About EnGenia</h2>
-              </motion.div>
+  <div className="container mx-auto px-4">
+    <div className="max-w-4xl mx-auto text-center">
+      <motion.div 
+        className="mb-12"
+        initial={isMobile ? { y: 16 } : { opacity: 0, x: -100 }}
+        whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
+        transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
+        viewport={{ once: false }}
+      >
+        <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white font-mono">About EnGenia</h2>
+      </motion.div>
 
-              <motion.p
-                className="text-lg sm:text-xl text-gray-300 mb-16 leading-relaxed max-w-3xl mx-auto font-serif"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.4 }}
-                viewport={{ once: false }}
-              >
-                EnGenia is one of the facets of vibrant campus life at LICET. It is a two day annual cultural fest for
-                students to reinvent their talents, showcase their creative and innovative skills. EnGenia fosters
-                self-belief, perseverance, hard work and most of all, teamwork among the participants and encourages a
-                healthy competition between the departments.
-              </motion.p>
+      <motion.p
+        className="text-lg sm:text-xl text-gray-300 mb-16 leading-relaxed max-w-3xl mx-auto font-serif"
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 1, delay: 0.4 }}
+        viewport={{ once: false }}
+      >
+        EnGenia is one of the facets of vibrant campus life at LICET. It is a two day annual cultural fest for
+        students to reinvent their talents, showcase their creative and innovative skills. EnGenia fosters
+        self-belief, perseverance, hard work and most of all, teamwork among the participants and encourages a
+        healthy competition between the departments.
+      </motion.p>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
-                <motion.div
-                  className="p-6 bg-gradient-to-br from-purple-500/10 to-violet-600/10 backdrop-blur-sm rounded-2xl border border-purple-400/20 hover:border-purple-400/40 transition-all duration-500"
-                  initial={isMobile ? { y: 16 } : { opacity: 0, x: -50 }}
-                  whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
-                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.1 } : { duration: 0.8, delay: 0.1 }}
-                  viewport={{ once: false }}
-                >
-                  <motion.div
-                    initial={isMobile ? { x: -12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.15 } : {}}
-                  >
-                    <BookOpen className="w-12 h-12 text-purple-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-3 text-white font-mono">Academic Excellence</h3>
-                  </motion.div>
-                  <motion.p
-                    className="text-gray-400 text-sm font-serif"
-                    initial={isMobile ? { x: 12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.22 } : {}}
-                  >
-                    Preparing students with value-added courses and skill-based training
-                  </motion.p>
-                </motion.div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-16">
+        <motion.div
+          className="p-6 bg-gradient-to-br from-purple-500/10 to-violet-600/10 backdrop-blur-sm rounded-2xl border border-purple-400/20 hover:border-purple-400/40 transition-all duration-500"
+          initial={isMobile ? { y: 16 } : { x: -200, rotateY: -45, opacity: 0 }}
+          whileInView={isMobile ? { y: 0 } : { x: 0, rotateY: 0, opacity: 1 }}
+          transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.1 } : { 
+            duration: 0.8, 
+            delay: 0.1,
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }}
+          viewport={{ once: false }}
+          whileHover={!isMobile ? { 
+            rotateY: 10, 
+            rotateX: 5,
+            scale: 1.05,
+            transition: { duration: 0.3 }
+          } : {}}
+        >
+          <motion.div
+            initial={isMobile ? { x: -12 } : { scale: 0.8 }}
+            whileInView={isMobile ? { x: 0 } : { scale: 1 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.15 } : {
+              delay: 0.3,
+              duration: 0.5,
+              type: "spring",
+              stiffness: 120
+            }}
+          >
+            <BookOpen className="w-12 h-12 text-purple-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-3 text-white font-mono">Academic Excellence</h3>
+          </motion.div>
+          <motion.p
+            className="text-gray-400 text-sm font-serif"
+            initial={isMobile ? { x: 12 } : { opacity: 0, y: 20 }}
+            whileInView={isMobile ? { x: 0 } : { opacity: 1, y: 0 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.22 } : {
+              delay: 0.5,
+              duration: 0.4
+            }}
+          >
+            Preparing students with value-added courses and skill-based training
+          </motion.p>
+        </motion.div>
 
-                <motion.div
-                  className="p-6 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 backdrop-blur-sm rounded-2xl border border-blue-400/20 hover:border-blue-400/40 transition-all duration-500"
-                  initial={isMobile ? { y: 16 } : { opacity: 0, y: 50 }}
-                  whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
-                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.3 } : { duration: 0.8, delay: 0.3 }}
-                  viewport={{ once: false }}
-                >
-                  <motion.div
-                    initial={isMobile ? { x: -12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.35 } : {}}
-                  >
-                    <Zap className="w-12 h-12 text-blue-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-3 text-white font-mono">Professionalism</h3>
-                  </motion.div>
-                  <motion.p
-                    className="text-gray-400 text-sm font-serif"
-                    initial={isMobile ? { x: 12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.42 } : {}}
-                  >
-                    Excelling through interaction and integration with industries
-                  </motion.p>
-                </motion.div>
+        <motion.div
+          className="p-6 bg-gradient-to-br from-blue-500/10 to-indigo-600/10 backdrop-blur-sm rounded-2xl border border-blue-400/20 hover:border-blue-400/40 transition-all duration-500"
+          initial={isMobile ? { y: 16 } : { x: 200, rotateY: 45, opacity: 0 }}
+          whileInView={isMobile ? { y: 0 } : { x: 0, rotateY: 0, opacity: 1 }}
+          transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.3 } : { 
+            duration: 0.8, 
+            delay: 0.3,
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }}
+          viewport={{ once: false }}
+          whileHover={!isMobile ? { 
+            rotateY: -10, 
+            rotateX: 5,
+            scale: 1.05,
+            transition: { duration: 0.3 }
+          } : {}}
+        >
+          <motion.div
+            initial={isMobile ? { x: -12 } : { scale: 0.8 }}
+            whileInView={isMobile ? { x: 0 } : { scale: 1 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.35 } : {
+              delay: 0.5,
+              duration: 0.5,
+              type: "spring",
+              stiffness: 120
+            }}
+          >
+            <Zap className="w-12 h-12 text-blue-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-3 text-white font-mono">Professionalism</h3>
+          </motion.div>
+          <motion.p
+            className="text-gray-400 text-sm font-serif"
+            initial={isMobile ? { x: 12 } : { opacity: 0, y: 20 }}
+            whileInView={isMobile ? { x: 0 } : { opacity: 1, y: 0 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.42 } : {
+              delay: 0.7,
+              duration: 0.4
+            }}
+          >
+            Excelling through interaction and integration with industries
+          </motion.p>
+        </motion.div>
 
-                <motion.div
-                  className="p-6 bg-gradient-to-br from-pink-500/10 to-rose-600/10 backdrop-blur-sm rounded-2xl border border-pink-400/20 hover:border-pink-400/40 transition-all duration-500"
-                  initial={isMobile ? { y: 16 } : { opacity: 0, y: 50 }}
-                  whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
-                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.5 } : { duration: 0.8, delay: 0.5 }}
-                  viewport={{ once: false }}
-                >
-                  <motion.div
-                    initial={isMobile ? { x: -12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.55 } : {}}
-                  >
-                    <Heart className="w-12 h-12 text-pink-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-3 text-white font-mono">Holistic Formation</h3>
-                  </motion.div>
-                  <motion.p
-                    className="text-gray-400 text-sm font-serif"
-                    initial={isMobile ? { x: 12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.62 } : {}}
-                  >
-                    Overall growth through sports and cultural activities
-                  </motion.p>
-                </motion.div>
+        <motion.div
+          className="p-6 bg-gradient-to-br from-pink-500/10 to-rose-600/10 backdrop-blur-sm rounded-2xl border border-pink-400/20 hover:border-pink-400/40 transition-all duration-500"
+          initial={isMobile ? { y: 16 } : { x: -200, rotateY: -45, opacity: 0 }}
+          whileInView={isMobile ? { y: 0 } : { x: 0, rotateY: 0, opacity: 1 }}
+          transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.5 } : { 
+            duration: 0.8, 
+            delay: 0.5,
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }}
+          viewport={{ once: false }}
+          whileHover={!isMobile ? { 
+            rotateY: 10, 
+            rotateX: -5,
+            scale: 1.05,
+            transition: { duration: 0.3 }
+          } : {}}
+        >
+          <motion.div
+            initial={isMobile ? { x: -12 } : { scale: 0.8 }}
+            whileInView={isMobile ? { x: 0 } : { scale: 1 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.55 } : {
+              delay: 0.7,
+              duration: 0.5,
+              type: "spring",
+              stiffness: 120
+            }}
+          >
+            <Heart className="w-12 h-12 text-pink-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-3 text-white font-mono">Holistic Formation</h3>
+          </motion.div>
+          <motion.p
+            className="text-gray-400 text-sm font-serif"
+            initial={isMobile ? { x: 12 } : { opacity: 0, y: 20 }}
+            whileInView={isMobile ? { x: 0 } : { opacity: 1, y: 0 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.62 } : {
+              delay: 0.9,
+              duration: 0.4
+            }}
+          >
+            Overall growth through sports and cultural activities
+          </motion.p>
+        </motion.div>
 
-                <motion.div
-                  className="p-6 bg-gradient-to-br from-amber-500/10 to-orange-600/10 backdrop-blur-sm rounded-2xl border border-amber-400/20 hover:border-amber-400/40 transition-all duration-500"
-                  initial={isMobile ? { y: 16 } : { opacity: 0, x: 50 }}
-                  whileInView={isMobile ? { y: 0 } : { opacity: 1, x: 0 }}
-                  transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.7 } : { duration: 0.8, delay: 0.7 }}
-                  viewport={{ once: false }}
-                >
-                  <motion.div
-                    initial={isMobile ? { x: -12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.75 } : {}}
-                  >
-                    <Award className="w-12 h-12 text-amber-400 mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-3 text-white font-mono">International Exposure</h3>
-                  </motion.div>
-                  <motion.p
-                    className="text-gray-400 text-sm font-serif"
-                    initial={isMobile ? { x: 12 } : {}}
-                    whileInView={isMobile ? { x: 0 } : {}}
-                    transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.82 } : {}}
-                  >
-                    World-class exposure through university collaborations
-                  </motion.p>
-                </motion.div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <motion.div
+          className="p-6 bg-gradient-to-br from-amber-500/10 to-orange-600/10 backdrop-blur-sm rounded-2xl border border-amber-400/20 hover:border-amber-400/40 transition-all duration-500"
+          initial={isMobile ? { y: 16 } : { x: 200, rotateY: 45, opacity: 0 }}
+          whileInView={isMobile ? { y: 0 } : { x: 0, rotateY: 0, opacity: 1 }}
+          transition={isMobile ? { type: "spring", stiffness: 140, damping: 18, delay: 0.7 } : { 
+            duration: 0.8, 
+            delay: 0.7,
+            type: "spring",
+            stiffness: 100,
+            damping: 15
+          }}
+          viewport={{ once: false }}
+          whileHover={!isMobile ? { 
+            rotateY: -10, 
+            rotateX: -5,
+            scale: 1.05,
+            transition: { duration: 0.3 }
+          } : {}}
+        >
+          <motion.div
+            initial={isMobile ? { x: -12 } : { scale: 0.8 }}
+            whileInView={isMobile ? { x: 0 } : { scale: 1 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.75 } : {
+              delay: 0.9,
+              duration: 0.5,
+              type: "spring",
+              stiffness: 120
+            }}
+          >
+            <Award className="w-12 h-12 text-amber-400 mx-auto mb-4" />
+            <h3 className="text-xl font-bold mb-3 text-white font-mono">International Exposure</h3>
+          </motion.div>
+          <motion.p
+            className="text-gray-400 text-sm font-serif"
+            initial={isMobile ? { x: 12 } : { opacity: 0, y: 20 }}
+            whileInView={isMobile ? { x: 0 } : { opacity: 1, y: 0 }}
+            transition={isMobile ? { type: "spring", stiffness: 160, damping: 18, delay: 0.82 } : {
+              delay: 1.1,
+              duration: 0.4
+            }}
+          >
+            World-class exposure through university collaborations
+          </motion.p>
+        </motion.div>
+      </div>
+    </div>
+  </div>
+</section>
 
         {/* Departments Section */}
         <section className="min-h-screen py-20 relative">
@@ -587,7 +668,7 @@ export default function LandingPage() {
               viewport={{ once: false }}
             >
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 font-mono">
-                Join EnGenia 2K25
+                Join EnGenia 2025
               </h2>
               <motion.p 
                 className="text-xl text-white max-w-3xl mx-auto leading-relaxed font-serif"

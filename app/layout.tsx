@@ -4,6 +4,12 @@ import { Space_Grotesk, DM_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import "./globals.css"
+import { validateEnv } from "@/lib/validateEnv"
+
+// Validate environment early (server only). This will no-op after first call.
+if (typeof window === 'undefined') {
+  validateEnv()
+}
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],

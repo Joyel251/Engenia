@@ -1,6 +1,8 @@
+"use client";
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
+import Link from 'next/link';
 
 type MenuItem = {
   label: string;
@@ -14,10 +16,11 @@ type MenuItem = {
 };
 
 export type BubbleMenuProps = {
-  logo: ReactNode | string;
+  logo?: ReactNode | string;
   onMenuClick?: (open: boolean) => void;
   className?: string;
   style?: CSSProperties;
+  hideLogo?: boolean;
   menuAriaLabel?: string;
   menuBg?: string;
   menuContentColor?: string;
@@ -31,21 +34,21 @@ export type BubbleMenuProps = {
 const DEFAULT_ITEMS: MenuItem[] = [
   {
     label: 'home',
-    href: '#',
+    href: '/home',
     ariaLabel: 'Home',
     rotation: -8,
     hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
   },
   {
     label: 'events',
-    href: '#',
+    href: '/events',
     ariaLabel: 'Events',
     rotation: 8,
     hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' }
   },
   {
     label: 'leaderboard',
-    href: '#',
+    href: '/leaderboard',
     ariaLabel: 'Leaderboard',
     rotation: 8,
     hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' }
@@ -71,6 +74,7 @@ export default function BubbleMenu({
   onMenuClick,
   className,
   style,
+  hideLogo = false,
   menuAriaLabel = 'Toggle menu',
   menuBg = '#fff',
   menuContentColor = '#111',
@@ -105,12 +109,13 @@ export default function BubbleMenu({
     'bubble-menu',
     useFixedPosition ? 'fixed' : 'absolute',
     'top-4 md:top-8',
-    'left-4 right-4 md:left-0 md:right-0',
-    'flex items-center justify-between',
-    'gap-2 px-0 md:gap-4 md:px-8',
+    'left-4 right-4 md:left-8 md:right-8',
+    'flex items-center',
+    hideLogo ? 'justify-end' : 'justify-between',
+    'gap-2 px-0 md:gap-4',
     'pointer-events-none',
     'z-[1001]',
-    'md:max-w-screen-xl md:mx-auto',
+    'max-w-screen-xl mx-auto',
     className
   ]
     .filter(Boolean)
@@ -303,7 +308,7 @@ export default function BubbleMenu({
       `}</style>
 
       <nav className={containerClassName} style={style} aria-label="Main navigation">
-        <div
+        {!hideLogo && <div
           className={[
             'bubble logo-bubble',
             'inline-flex items-center justify-center',
@@ -336,7 +341,7 @@ export default function BubbleMenu({
               logo
             )}
           </span>
-        </div>
+  </div>}
 
         <button
           type="button"
@@ -429,7 +434,7 @@ export default function BubbleMenu({
                   'box-border'
                 ].join(' ')}
               >
-                <a
+                <Link
                   role="menuitem"
                   href={item.href}
                   aria-label={item.ariaLabel || item.label}
@@ -472,7 +477,15 @@ export default function BubbleMenu({
                     } as CSSProperties
                   }
                   ref={el => {
-                    if (el) bubblesRef.current[idx] = el;
+                    if (el) bubblesRef.current[idx] = el as unknown as HTMLAnchorElement;
+                  }}
+                  onClick={() => {
+                    // Close after navigation
+                    if (isMenuOpen) {
+                      setIsMenuOpen(false);
+                      // overlay hide animation mimic
+                      setTimeout(() => setShowOverlay(false), 250);
+                    }
                   }}
                 >
                   <span
@@ -491,7 +504,7 @@ export default function BubbleMenu({
                   >
                     {item.label}
                   </span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>

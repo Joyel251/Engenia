@@ -114,6 +114,13 @@
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
   }
+  /* Utility: perspective for 3D flip cards */
+  .perspective { perspective: 1600px; }
+
+  /* Custom scroll area inside flip card back (still hidden main scrollbars globally) */
+  .custom-scroll { scrollbar-width: thin; }
+  .custom-scroll::-webkit-scrollbar { width: 4px; }
+  .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.25); border-radius: 2px; }
 
   /* Logo floating animation */
   @keyframes logoFloat {
@@ -123,4 +130,37 @@
     50% {
       transform: translateY(-8px) rotate(2deg);
     }
+  }
+  /* ------------------------------------------------------ */
+  /* Global scrollbar hiding (preserves scroll interaction) */
+  /* ------------------------------------------------------ */
+  /* Firefox */
+  html, body, * {
+    scrollbar-width: none; /* Hide scrollbar, allow scroll */
+    -ms-overflow-style: none; /* IE/Edge legacy */
+  }
+  /* WebKit */
+  ::-webkit-scrollbar {
+    width: 0px;
+    height: 0px;
+    background: transparent;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: transparent;
+    border: none;
+  }
+  /* Optional utility if you later want to selectively re-enable scrollbars on a container */
+  .show-scrollbar {
+    scrollbar-width: thin;
+  }
+  .show-scrollbar::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .show-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 4px;
   }

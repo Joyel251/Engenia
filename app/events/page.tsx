@@ -2,6 +2,25 @@ import prisma from '@/lib/prisma';
 import EventCards from "@/components/event-cards"
 import nextDynamic from 'next/dynamic'
 
+// Simple bounded retry for transient connection failures (e.g., first cold start)
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): Promise<T> {
+  let lastErr: any
+  for (let i = 0; i < attempts; i++) {
+    try {
+      if (i > 0) {
+        console.warn(`[events] retry ${i}/${attempts}`)
+        await new Promise(r => setTimeout(r, delayMs * i))
+      }
+      return await fn()
+    } catch (e: any) {
+      lastErr = e
+      // Abort early on known non‑retryable prisma errors (e.g., validation)
+      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break
+    }
+  }
+  throw lastErr
+}
+
 // BubbleMenu is a client component; load dynamically to avoid SSR mismatch
 const BubbleMenu = nextDynamic(() => import('@/components/BubbleMenu'), { ssr: false })
 const LightRays = nextDynamic(() => import('@/components/light-rays'), { ssr: false })
@@ -10,17 +29,19 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export default async function EventsPage() {
-  // Fetch events with winners for context (status, division, etc.)
-  const rawEvents = await (prisma as any).event.findMany({
-    include: { 
-      winners: {
-        include: {
-          department: true
-        }
-      }
-    },
-    orderBy: { date: 'asc' }
-  });
+  let rawEvents: any[] = []
+  try {
+    rawEvents = await withRetry(() => (prisma as any).event.findMany({
+      include: {
+        winners: { include: { department: true } }
+      },
+      orderBy: { date: 'asc' }
+    }))
+  } catch (error: any) {
+    console.error('[events] failed to fetch events after retries:', error)
+    // Graceful empty state on production connection failure
+    rawEvents = []
+  }
 
   // Normalize nullable fields for client component expectations
   const events = rawEvents.map((e: any) => ({
@@ -58,6 +79,11 @@ export default async function EventsPage() {
 
         {/* Event Cards Section */}
         <EventCards events={events} />
+        {rawEvents.length === 0 && (
+          <div className="mt-16 text-center text-sm text-zinc-500">
+            <p>No events could be loaded. (Possible temporary database connection issue.)</p>
+          </div>
+        )}
       </div>
     </main>
   );

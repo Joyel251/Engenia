@@ -2,6 +2,23 @@ import prisma from '@/lib/prisma';
 import Leaderboard from "@/components/Leaderboard"
 import nextDynamic from 'next/dynamic'
 
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): Promise<T> {
+  let lastErr: any
+  for (let i = 0; i < attempts; i++) {
+    try {
+      if (i > 0) {
+        console.warn(`[leaderboard] retry ${i}/${attempts}`)
+        await new Promise(r => setTimeout(r, delayMs * i))
+      }
+      return await fn()
+    } catch (e: any) {
+      lastErr = e
+      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break
+    }
+  }
+  throw lastErr
+}
+
 // Dynamic imports for client components
 const BubbleMenu = nextDynamic(() => import('@/components/BubbleMenu'), { ssr: false })
 const LightRays = nextDynamic(() => import('@/components/light-rays'), { ssr: false })
@@ -39,31 +56,23 @@ interface DepartmentRanking {
 
 export default async function LeaderboardPage() {
   try {
-    // Fetch settings for podium visibility
-    const settings = await (prisma as any).settings.findFirst();
+    // Fetch settings for podium visibility with retry
+  const settings = await withRetry(() => (prisma as any).settings.findFirst()) as { leaderboardVisible?: boolean } | null
 
-    // Fetch departments with their winners and achievements
-    const departments = await (prisma as any).department.findMany({
+    // Fetch departments with their winners and achievements (retry to survive transient network issue)
+    const departments = await withRetry(() => (prisma as any).department.findMany({
       include: {
         achievements: true,
         winners: {
-          include: {
-            event: true
-          },
-          orderBy: {
-            event: {
-              date: 'desc'
-            }
-          }
+          include: { event: true },
+          orderBy: { event: { date: 'desc' } }
         }
       },
-      orderBy: {
-        points: 'desc'
-      }
-    });
+      orderBy: { points: 'desc' }
+    })) as any[]
 
   // Calculate detailed rankings and statistics (points derived from winners' event points)
-    const departmentRankings: DepartmentRanking[] = departments.map((dept: any) => {
+  const departmentRankings: DepartmentRanking[] = (departments as any[]).map((dept: any) => {
       const winners = dept.winners || [];
       const firstPlaces = winners.filter((w: any) => w.position === 1).length;
       const secondPlaces = winners.filter((w: any) => w.position === 2).length;
@@ -145,7 +154,7 @@ export default async function LeaderboardPage() {
       </main>
     );
   } catch (error) {
-    console.error('Error fetching leaderboard data:', error);
+    console.error('Error fetching leaderboard data after retries:', error);
     return (
       <main className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
@@ -158,7 +167,7 @@ export default async function LeaderboardPage() {
           </h1>
           <div className="text-center py-20">
             <h3 className="text-2xl text-zinc-400 mb-4">Unable to load leaderboard</h3>
-            <p className="text-zinc-500">Please try again later.</p>
+            <p className="text-zinc-500">Temporary database connection issue. Please try again shortly.</p>
           </div>
         </div>
       </main>

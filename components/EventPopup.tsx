@@ -238,7 +238,9 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                               </div>
                               <div className="text-right flex-shrink-0 ml-2">
                                 <div className="text-xs sm:text-sm font-bold text-purple-400">{positionText}</div>
-                                <div className="text-xs text-zinc-400">{winner.department.points} pts</div>
+                                <div className="text-xs text-zinc-400">
+                                  {(event.points?.[winner.position.toString()] ?? 0)} pts
+                                </div>
                               </div>
                             </div>
                           )

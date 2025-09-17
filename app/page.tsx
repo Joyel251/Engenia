@@ -35,7 +35,7 @@ export default function SplashScreen() {
   }, []);
 
   const handleAnimationComplete = () => {
-    console.log("Engenia 2K25 animation completed!");
+    console.log("Engenia 2025 animation completed!");
     setShowShinyText(true);
     
     // Show navigation prompt after a short delay
@@ -119,7 +119,7 @@ export default function SplashScreen() {
           <div className="text-center">
             {!showShinyText ? (
               <BlurText
-                text="ENGENIA 2K25"
+                text="ENGENIA 2025"
                 delay={150}
                 animateBy="letters"
                 direction="top"
@@ -131,7 +131,7 @@ export default function SplashScreen() {
               />
             ) : (
               <ShinyText
-                text="ENGENIA 2K25"
+                text="ENGENIA 2025"
                 disabled={false}
                 speed={3}
                 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-heading font-black tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"

@@ -5,7 +5,14 @@ export const runtime = 'nodejs';
 
 export async function GET(req) {
   const departments = await prisma.department.findMany({
-    include: { achievements: true, winners: true },
+    include: { 
+      achievements: true, 
+      winners: {
+        include: { event: true },
+        orderBy: { event: { date: 'desc' } }
+      }
+    },
+    orderBy: { points: 'desc' }
   });
   return new Response(JSON.stringify(departments), { status: 200 });
 }

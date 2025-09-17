@@ -1,31 +1,49 @@
-import { NextResponse } from 'next/server'
-import prisma from '@/lib/prisma'
-
-export const runtime = 'nodejs'
-export const revalidate = 0
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
 
 export async function GET() {
-  const started = Date.now()
   try {
-    // Lightweight query; select 1 row or count
-    const eventCount = await prisma.event.count()
-    const durationMs = Date.now() - started
-    return NextResponse.json({
-      ok: true,
-      eventCount,
-      durationMs,
-      dbHost: process.env.DATABASE_URL?.split('@')[1]?.split(':')[0] || 'unknown'
-    }, { status: 200 })
+    console.log('🔍 Environment check:');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+    console.log('DATABASE_URL preview:', process.env.DATABASE_URL?.substring(0, 50) + '...');
+    
+    console.log('🔌 Attempting database connection...');
+    
+    // Test connection with timeout
+    const connectionTest = prisma.$queryRaw`SELECT 1 as test`;
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Connection timeout after 10s')), 10000)
+    );
+    
+    await Promise.race([connectionTest, timeoutPromise]);
+    
+    console.log('✅ Database connection successful');
+    
+    // Test basic query
+    const count = await prisma.event.count();
+    console.log('📊 Event count:', count);
+    
+    return NextResponse.json({ 
+      status: 'healthy',
+      database: 'connected',
+      eventCount: count,
+      timestamp: new Date().toISOString()
+    });
+    
   } catch (error) {
-    const durationMs = Date.now() - started
-    console.error('[DB_HEALTH] Error:', error)
+    console.error('❌ Database health check failed:');
+    console.error('Error name:', error.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Full error:', error);
+    
     return NextResponse.json({
-      ok: false,
-      durationMs,
-      name: error?.name,
-      message: error?.message,
-      code: error?.code || undefined,
-      digest: error?.digest || undefined
-    }, { status: 500 })
+      status: 'unhealthy',
+      database: 'disconnected',
+      error: error.message,
+      errorCode: error.code,
+      timestamp: new Date().toISOString()
+    }, { status: 500 });
   }
 }

@@ -31,7 +31,7 @@ export const runtime = 'nodejs';
 export default async function EventsPage() {
   let rawEvents: any[] = []
   try {
-    rawEvents = await withRetry(() => (prisma as any).event.findMany({
+    rawEvents = await withRetry(() => prisma.event.findMany({
       include: {
         winners: { include: { department: true } }
       },

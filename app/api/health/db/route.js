@@ -1,6 +1,24 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
 
+// Simple bounded retry for transient connection failures
+async function withRetry(fn, attempts = 3, delayMs = 250) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      if (i > 0) {
+        console.warn(`[health] retry ${i}/${attempts}`);
+        await new Promise(r => setTimeout(r, delayMs * i));
+      }
+      return await fn();
+    } catch (e) {
+      lastErr = e;
+      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break;
+    }
+  }
+  throw lastErr;
+}
+
 export async function GET() {
   try {
     console.log('🔍 Environment check:');
@@ -10,18 +28,12 @@ export async function GET() {
     
     console.log('🔌 Attempting database connection...');
     
-    // Test connection with timeout
-    const connectionTest = prisma.$queryRaw`SELECT 1 as test`;
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Connection timeout after 10s')), 10000)
-    );
-    
-    await Promise.race([connectionTest, timeoutPromise]);
-    
+    // Test connection with retry mechanism
+    await withRetry(() => prisma.$queryRaw`SELECT 1 as test`);
     console.log('✅ Database connection successful');
     
-    // Test basic query
-    const count = await prisma.event.count();
+    // Test basic query with retry
+    const count = await withRetry(() => prisma.event.count());
     console.log('📊 Event count:', count);
     
     return NextResponse.json({ 
@@ -32,7 +44,7 @@ export async function GET() {
     });
     
   } catch (error) {
-    console.error('❌ Database health check failed:');
+    console.error('❌ Database health check failed after retries:');
     console.error('Error name:', error.name);
     console.error('Error message:', error.message);
     console.error('Error code:', error.code);

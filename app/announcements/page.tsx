@@ -44,7 +44,7 @@ export default async function AnnouncementsPage() {
   let announcements: Announcement[] = []
   
   try {
-    const rawAnnouncements = await withRetry(() => (prisma as any).announcement.findMany({
+    const rawAnnouncements = await withRetry(() => prisma.announcement.findMany({
       orderBy: { createdAt: 'desc' }
     })) as any[]
     

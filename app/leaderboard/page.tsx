@@ -60,10 +60,10 @@ interface DepartmentRanking {
 export default async function LeaderboardPage() {
   try {
     // Fetch settings for podium visibility with retry
-  const settings = await withRetry(() => (prisma as any).settings.findFirst()) as { leaderboardVisible?: boolean } | null
+  const settings = await withRetry(() => prisma.settings.findFirst()) as { leaderboardVisible?: boolean } | null
 
     // Fetch departments with their winners and achievements (retry to survive transient network issue)
-    const departments = await withRetry(() => (prisma as any).department.findMany({
+    const departments = await withRetry(() => prisma.department.findMany({
       include: {
         achievements: true,
         winners: {

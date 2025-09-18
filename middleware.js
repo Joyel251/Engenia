@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { verifyTokenEdge } from "./lib/edge-auth";
 
 export const config = {
-  matcher: ["/api/winners"],
+  matcher: ["/api/winners/:path*"],
 };
 
 export async function middleware(req) {
   console.log("🔍 Middleware called for:", req.method, req.nextUrl.pathname);
   
-  // Only protect POST requests
-  if (req.method === "POST") {
+  // Only protect POST and DELETE requests
+  if (req.method === "POST" || req.method === "DELETE") {
     const authHeader = req.headers.get("Authorization");
     console.log("📋 Auth header:", authHeader);
 

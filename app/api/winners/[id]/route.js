@@ -100,6 +100,19 @@ export async function DELETE(req, { params }) {
 
     await prisma.winner.delete({ where: { id } });
 
+    // Check remaining winners count and update event status
+    const remainingWinners = await prisma.winner.count({
+      where: { eventId: winner.eventId }
+    });
+
+    // If less than 3 winners remain, mark event as ONGOING instead of COMPLETED
+    if (remainingWinners < 3 && event?.status === 'COMPLETED') {
+      await prisma.event.update({
+        where: { id: winner.eventId },
+        data: { status: 'ONGOING' }
+      });
+    }
+
     return NextResponse.json({ message: "Winner deleted successfully" });
   } catch (error) {
     console.error("Error deleting winner:", error);

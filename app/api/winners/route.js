@@ -16,8 +16,30 @@ export async function POST(req) {
     const body = await req.json();
     const { eventId, deptId, position, studentName } = body;
 
-    if (!eventId || !deptId || !position || !studentName) {
-      return new Response(JSON.stringify({ error: 'eventId, deptId, position, and studentName required' }), { status: 400 });
+    if (!eventId || !deptId || !position) {
+      return new Response(JSON.stringify({ error: 'eventId, deptId, and position are required' }), { status: 400 });
+    }
+
+    // Check if position already exists for this event
+    const existingPositionWinner = await prisma.winner.findFirst({
+      where: { eventId, position }
+    });
+
+    if (existingPositionWinner) {
+      return new Response(JSON.stringify({ 
+        error: `Position ${position} already has a winner for this event` 
+      }), { status: 400 });
+    }
+
+    // Check if department already has a winner for this event
+    const existingDeptWinner = await prisma.winner.findFirst({
+      where: { eventId, deptId }
+    });
+
+    if (existingDeptWinner) {
+      return new Response(JSON.stringify({ 
+        error: 'This department already has a winner for this event' 
+      }), { status: 400 });
     }
 
     // 1️⃣ Fetch event to get points mapping
@@ -31,7 +53,7 @@ export async function POST(req) {
 
     // 3️⃣ Create winner
     const newWinner = await prisma.winner.create({
-      data: { eventId, deptId, position, studentName },
+      data: { eventId, deptId, position, studentName: studentName || null },
     });
 
     // 4️⃣ Update department points
@@ -43,11 +65,17 @@ export async function POST(req) {
       data: { points: newPoints },
     });
 
-    // 5️⃣ Mark event as completed
-    await prisma.event.update({
-      where: { id: eventId },
-      data: { status: 'COMPLETED' },
+    // 5️⃣ Check if event now has all 3 winners (1st, 2nd, 3rd) and mark as completed
+    const totalWinners = await prisma.winner.count({
+      where: { eventId }
     });
+
+    if (totalWinners >= 3) {
+      await prisma.event.update({
+        where: { id: eventId },
+        data: { status: 'COMPLETED' },
+      });
+    }
 
     return new Response(JSON.stringify(newWinner), { status: 201 });
   } catch (error) {

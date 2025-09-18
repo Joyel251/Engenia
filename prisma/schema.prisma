@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../node_modules/prisma/client"
 }
 
 datasource db {
@@ -16,23 +17,23 @@ model Department {
 }
 
 model Event {
-  id          String        @id @default(cuid())
-  name        String
-  status      EventStatus   @default(UPCOMING)
-  division    EventDivision
-  type        EventType?     // NEW: individual or team
-  date        DateTime
-  guidelines  String?       // NEW: guidelines
-  points      Json          @default("{}") // e.g., { "1": 30, "2":25, "3":20 }
-  winners     Winner[]
+  id         String        @id @default(cuid())
+  name       String
+  status     EventStatus   @default(UPCOMING)
+  date       DateTime
+  division   EventDivision
+  points     Json          @default("{}")
+  guidelines String?
+  type       EventType?
+  winners    Winner[]
 }
 
 model Winner {
   id          String     @id @default(cuid())
   eventId     String
   deptId      String
-  position    Int        // 1, 2, or 3
-  studentName String?    // only for individual events
+  position    Int
+  studentName String?
   department  Department @relation(fields: [deptId], references: [id])
   event       Event      @relation(fields: [eventId], references: [id])
 }
@@ -52,7 +53,6 @@ model Announcement {
   updatedAt DateTime @updatedAt
 }
 
-
 model Settings {
   id                 String  @id @default(cuid())
   leaderboardVisible Boolean @default(true)
@@ -62,9 +62,8 @@ model Settings {
 model Admin {
   id       String @id @default(cuid())
   username String @unique
-  password String // hashed password
+  password String
 }
-
 
 enum EventStatus {
   UPCOMING

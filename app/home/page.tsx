@@ -24,7 +24,7 @@ const menuItems = [
   },
   {
     label: 'leaderboard',
-    href: '#',
+    href: '/leaderboard',
     ariaLabel: 'Leaderboard',
     rotation: 8,
     hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' }
@@ -38,8 +38,8 @@ const menuItems = [
   },
   {
     label: 'updates',
-    href: '#',
-    ariaLabel: 'Updates',
+    href: '/announcements',
+    ariaLabel: 'Updates & Announcements',
     rotation: -8,
     hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
   }

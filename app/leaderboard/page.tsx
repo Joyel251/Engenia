@@ -22,6 +22,9 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
 // Dynamic imports for client components
 const BubbleMenu = nextDynamic(() => import('@/components/BubbleMenu'), { ssr: false })
 const LightRays = nextDynamic(() => import('@/components/light-rays'), { ssr: false })
+const PageIntroAnimation = nextDynamic(() => import('@/components/PageIntroAnimation'), { ssr: false })
+const AnimatedPageHeader = nextDynamic(() => import('@/components/PageIntroAnimation').then(mod => ({ default: mod.AnimatedPageHeader })), { ssr: false })
+const AnimatedPageContent = nextDynamic(() => import('@/components/PageIntroAnimation').then(mod => ({ default: mod.AnimatedPageContent })), { ssr: false })
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -129,7 +132,7 @@ export default async function LeaderboardPage() {
     });
 
     return (
-      <main className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden" aria-labelledby="leaderboard-heading">
+      <PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden" aria-labelledby="leaderboard-heading">
         {/* Light Rays Background */}
         <div className="absolute inset-0 pointer-events-none">
           <LightRays />
@@ -139,38 +142,46 @@ export default async function LeaderboardPage() {
         <BubbleMenu hideLogo useFixedPosition />
         
         <div className="relative z-10 max-w-7xl mx-auto">
-          <div className="text-center mb-8 md:mb-12">
-            <h1 id="leaderboard-heading" className="text-4xl md:text-6xl font-heading font-bold mb-4 tracking-tight">
-              Leaderboard
-            </h1>
-            <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
-              Department rankings based on event results
-            </p>
-          </div>
+          <AnimatedPageHeader>
+            <div className="text-center mb-8 md:mb-12">
+              <h1 id="leaderboard-heading" className="text-4xl md:text-6xl font-heading font-bold mb-4 tracking-tight">
+                Leaderboard
+              </h1>
+              <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
+                Department rankings based on event results
+              </p>
+            </div>
+          </AnimatedPageHeader>
 
-          {/* Leaderboard Component */}
-          <Leaderboard departments={departmentRankings} showPodium={Boolean(settings?.leaderboardVisible)} />
+          <AnimatedPageContent>
+            {/* Leaderboard Component */}
+            <Leaderboard departments={departmentRankings} showPodium={Boolean(settings?.leaderboardVisible)} />
+          </AnimatedPageContent>
         </div>
-      </main>
+      </PageIntroAnimation>
     );
   } catch (error) {
     console.error('Error fetching leaderboard data after retries:', error);
     return (
-      <main className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden">
+      <PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden">
         <div className="absolute inset-0 pointer-events-none">
           <LightRays />
         </div>
         <BubbleMenu hideLogo useFixedPosition />
         <div className="relative z-10 max-w-7xl mx-auto text-center">
-          <h1 className="text-4xl md:text-6xl font-heading font-bold mb-8 tracking-tight">
-            Leaderboard
-          </h1>
-          <div className="text-center py-20">
-            <h3 className="text-2xl text-zinc-400 mb-4">Unable to load leaderboard</h3>
-            <p className="text-zinc-500">Temporary database connection issue. Please try again shortly.</p>
-          </div>
+          <AnimatedPageHeader>
+            <h1 className="text-4xl md:text-6xl font-heading font-bold mb-8 tracking-tight">
+              Leaderboard
+            </h1>
+          </AnimatedPageHeader>
+          <AnimatedPageContent>
+            <div className="text-center py-20">
+              <h3 className="text-2xl text-zinc-400 mb-4">Unable to load leaderboard</h3>
+              <p className="text-zinc-500">Temporary database connection issue. Please try again shortly.</p>
+            </div>
+          </AnimatedPageContent>
         </div>
-      </main>
+      </PageIntroAnimation>
     );
   }
 }

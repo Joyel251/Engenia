@@ -62,8 +62,8 @@ const DEFAULT_ITEMS: MenuItem[] = [
   },
   {
     label: 'updates',
-    href: '#',
-    ariaLabel: 'Updates',
+    href: '/announcements',
+    ariaLabel: 'Updates & Announcements',
     rotation: -8,
     hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
   }

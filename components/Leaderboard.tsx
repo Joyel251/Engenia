@@ -60,7 +60,7 @@ const PODIUM_COLORS = {
   }
 }
 
-export default function Leaderboard({ departments, showPodium = true, live = true, pollIntervalMs = 5000 }: LeaderboardProps) {
+export default function Leaderboard({ departments, showPodium = true, live = false, pollIntervalMs = 5000 }: LeaderboardProps) {
   const [selectedDept, setSelectedDept] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [animateCards, setAnimateCards] = useState(false)
@@ -168,7 +168,23 @@ export default function Leaderboard({ departments, showPodium = true, live = tru
   // Manual refresh (soft; avoids full reload for animation continuity)
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true)
-    try { await performFetch() } catch (e) { console.error(e) } finally { setIsRefreshing(false) }
+    
+    // Trigger card swap animation before fetching
+    setAnimateCards(false)
+    
+    try { 
+      await performFetch() 
+      
+      // Re-trigger animations after data update
+      setTimeout(() => {
+        setAnimateCards(true)
+      }, 100)
+      
+    } catch (e) { 
+      console.error(e) 
+    } finally { 
+      setIsRefreshing(false) 
+    }
   }, [performFetch])
 
   const getRankIcon = (rank: number) => {
@@ -208,17 +224,17 @@ export default function Leaderboard({ departments, showPodium = true, live = tru
   const topThree = sortedData.slice(0, 3)
   const displayDepartments = sortedData
 
-  // Polling for live updates
-  useEffect(() => {
-    if (!live) return
-    let timer: any
-    const loop = async () => {
-      setIsPolling(true)
-      try { await performFetch() } catch (e) { console.error(e) } finally { setIsPolling(false); timer = setTimeout(loop, pollIntervalMs) }
-    }
-    loop()
-    return () => clearTimeout(timer)
-  }, [live, pollIntervalMs, performFetch])
+  // Polling disabled - only manual refresh available
+  // useEffect(() => {
+  //   if (!live) return
+  //   let timer: any
+  //   const loop = async () => {
+  //     setIsPolling(true)
+  //     try { await performFetch() } catch (e) { console.error(e) } finally { setIsPolling(false); timer = setTimeout(loop, pollIntervalMs) }
+  //   }
+  //   loop()
+  //   return () => clearTimeout(timer)
+  // }, [live, pollIntervalMs, performFetch])
 
   return (
     <div className="w-full max-w-6xl mx-auto">

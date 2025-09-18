@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Space_Grotesk, DM_Sans } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
+import { Toaster } from "sonner"
+import NotificationProvider from "@/components/NotificationProvider"
 import "./globals.css"
 import { validateEnv } from "@/lib/validateEnv"
 
@@ -45,6 +47,18 @@ export default function RootLayout({
           {children}
           <Analytics />
         </Suspense>
+        <NotificationProvider />
+        <Toaster 
+          theme="dark" 
+          position="top-right"
+          toastOptions={{
+            style: {
+              background: 'rgb(24, 24, 27)',
+              border: '1px solid rgb(63, 63, 70)',
+              color: 'rgb(244, 244, 245)'
+            }
+          }}
+        />
       </body>
     </html>
   )

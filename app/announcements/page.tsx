@@ -1,0 +1,115 @@
+import prisma from '@/lib/prisma';
+import nextDynamic from 'next/dynamic'
+import { motion } from 'motion/react'
+import { Clock, Megaphone, Calendar } from 'lucide-react'
+
+// Simple bounded retry for transient connection failures
+async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): Promise<T> {
+  let lastErr: any
+  for (let i = 0; i < attempts; i++) {
+    try {
+      if (i > 0) {
+        console.warn(`[announcements] retry ${i}/${attempts}`)
+        await new Promise(r => setTimeout(r, delayMs * i))
+      }
+      return await fn()
+    } catch (e: any) {
+      lastErr = e
+      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break
+    }
+  }
+  throw lastErr
+}
+
+// Dynamic imports for client components
+const BubbleMenu = nextDynamic(() => import('@/components/BubbleMenu'), { ssr: false })
+const LightRays = nextDynamic(() => import('@/components/light-rays'), { ssr: false })
+const AnnouncementsList = nextDynamic(() => import('@/components/AnnouncementsList'), { ssr: false })
+const PageIntroAnimation = nextDynamic(() => import('@/components/PageIntroAnimation'), { ssr: false })
+const AnimatedPageHeader = nextDynamic(() => import('@/components/PageIntroAnimation').then(mod => ({ default: mod.AnimatedPageHeader })), { ssr: false })
+const AnimatedPageContent = nextDynamic(() => import('@/components/PageIntroAnimation').then(mod => ({ default: mod.AnimatedPageContent })), { ssr: false })
+
+export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
+
+interface Announcement {
+  id: string
+  title: string
+  content: string
+  createdAt: string
+  updatedAt: string
+}
+
+export default async function AnnouncementsPage() {
+  let announcements: Announcement[] = []
+  
+  try {
+    const rawAnnouncements = await withRetry(() => (prisma as any).announcement.findMany({
+      orderBy: { createdAt: 'desc' }
+    })) as any[]
+    
+    // Format dates for client
+    announcements = rawAnnouncements.map((announcement: any) => ({
+      id: announcement.id,
+      title: announcement.title,
+      content: announcement.content,
+      createdAt: announcement.createdAt.toISOString(),
+      updatedAt: announcement.updatedAt.toISOString()
+    }))
+  } catch (error: any) {
+    console.error('[announcements] failed to fetch announcements after retries:', error)
+    announcements = []
+  }
+
+  return (
+    <PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden" aria-labelledby="announcements-heading">
+      {/* Light Rays Background */}
+      <div className="absolute inset-0 pointer-events-none">
+        <LightRays />
+      </div>
+      
+      {/* Floating navigation menu */}
+      <BubbleMenu hideLogo useFixedPosition />
+      
+      <div className="relative z-10 max-w-7xl mx-auto">
+        {/* Header Section */}
+        <AnimatedPageHeader>
+          <div className="text-center mb-8 md:mb-12">
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="relative">
+                <Megaphone className="w-8 h-8 md:w-12 md:h-12 text-blue-400" />
+                <div className="absolute -inset-1 bg-blue-500/20 rounded-full blur-xl"></div>
+              </div>
+            </div>
+            
+            <h1 id="announcements-heading" className="text-4xl md:text-6xl font-heading font-bold mb-4 tracking-tight">
+              Announcements
+            </h1>
+            <p className="text-zinc-400 text-lg md:text-xl max-w-2xl mx-auto">
+              Stay updated with the latest news and updates from Engenia 2K25
+            </p>
+          </div>
+        </AnimatedPageHeader>
+
+        <AnimatedPageContent>
+          {/* Announcements Content */}
+          {announcements.length > 0 ? (
+            // @ts-ignore - Dynamic import typing issue
+            <AnnouncementsList announcements={announcements} />
+          ) : (
+            <div className="text-center py-20">
+              <div className="relative inline-block mb-6">
+                <Calendar className="w-16 h-16 text-zinc-600 mx-auto" />
+                <div className="absolute -inset-2 bg-zinc-600/10 rounded-full blur-xl"></div>
+              </div>
+              <h3 className="text-2xl text-zinc-400 mb-4">No announcements yet</h3>
+              <p className="text-zinc-500 max-w-md mx-auto">
+                Check back soon for important updates and news about Engenia 2K25 events and activities.
+              </p>
+            </div>
+          )}
+        </AnimatedPageContent>
+      </div>
+    </PageIntroAnimation>
+  );
+}

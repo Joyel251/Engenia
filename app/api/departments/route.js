@@ -1,4 +1,5 @@
 import { supabaseAdmin, TABLES } from '../../../lib/supabase';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -36,9 +37,12 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Name required' }), { status: 400 });
     }
 
+    // Generate explicit id to satisfy TEXT PK without default
+    const id = randomUUID();
+
     const { data: newDept, error } = await supabaseAdmin
       .from(TABLES.DEPARTMENTS)
-      .insert({ name, points: points || 0 })
+      .insert({ id, name, points: points || 0 })
       .select()
       .single();
 

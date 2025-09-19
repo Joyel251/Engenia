@@ -1,4 +1,5 @@
 import { supabaseAdmin, TABLES } from '../../../lib/supabase';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -30,9 +31,12 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'deptId and badgeName required' }), { status: 400 });
     }
 
+    // Generate explicit id to satisfy TEXT PK without default
+    const id = randomUUID();
+
     const { data: newAchievement, error } = await supabaseAdmin
       .from(TABLES.ACHIEVEMENTS)
-      .insert({ deptId, badgeName })
+      .insert({ id, deptId, badgeName })
       .select()
       .single();
 

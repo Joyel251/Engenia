@@ -549,11 +549,11 @@ export default function LandingPage() {
             {/* Mobile: Vertical scroll gallery with animations */}
             <div className="md:hidden space-y-8">
               {[
-                { src: '/1.webp', title: 'Opening Ceremony', desc: 'The grand inauguration of EnGenia 2025' },
-                { src: '/2.webp', title: 'Dance Performances', desc: 'Mesmerizing cultural dance shows' },
-                { src: '/3.webp', title: 'Music Concert', desc: 'Melodious evening performances' },
-                { src: '/4.webp', title: 'Drama Competition', desc: 'Theatrical excellence on stage' },
-                { src: '/6.webp', title: 'Walk-in Guest', desc: 'A surprise walk-in guest — students enjoying the moment' },
+                { src: '/1.webp', title: 'Valedictory Ceremony  ENGENIA-2024', desc: 'The Valedictory Ceremony of ENGENIA 2024 at Loyola-ICAM College of Engineering and Technology (LICET), graced by Chief Guest T. J. Gnanavel, renowned film director and screenwriter.' },
+                { src: '/2.webp', title: 'Cultural Dance Extravaganza', desc: 'A captivating group performance blending artistry and innovation, where rhythm and synchronized movements created a visual spectacle on stage.' },
+                { src: '/3.webp', title: 'Live Musical Performance', desc: 'Electrifying band performance filling the atmosphere with energy, passion, and rhythm.' },
+                { src: '/4.webp', title: 'Channel Surfing Event', desc: 'Channel Surfing brought vibrant energy to the stage, reflecting the spirit of fun and imagination.' },
+                { src: '/6.webp', title: 'Special Walk-in Guest Appearance – Arivu', desc: 'A surprise appearance by Arivu brought excitement and joy to the cultural celebrations.' },
                 { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony' }
                 
               ].map((item, idx) => (
@@ -652,12 +652,12 @@ export default function LandingPage() {
             {/* Tablet: Vertical scroll grid with animations */}
             <div className="hidden md:grid lg:hidden grid-cols-1 gap-10 max-w-2xl mx-auto">
               {[
-                { src: '/1.webp', title: 'Opening Ceremony', desc: 'The grand inauguration of EnGenia 2025', featured: true },
-                { src: '/2.webp', title: 'Dance Performances', desc: 'Mesmerizing cultural dance shows', featured: false },
-                { src: '/3.webp', title: 'Music Concert', desc: 'Melodious evening performances', featured: false },
-                { src: '/4.webp', title: 'Drama Competition', desc: 'Theatrical excellence on stage', featured: false },
-                { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony', featured: false },
-                { src: '/6.webp', title: 'Walk-in Guest', desc: 'A surprise walk-in guest — students enjoying the moment', featured: false }
+                { src: '/1.webp', title: 'Valedictory Ceremony  ENGENIA-2024', desc: 'The Valedictory Ceremony of ENGENIA 2024 at Loyola-ICAM College of Engineering and Technology (LICET), graced by Chief Guest T. J. Gnanavel, renowned film director and screenwriter.', featured: true },
+                { src: '/2.webp', title: 'Cultural Dance Extravaganza', desc: 'A captivating group performance blending artistry and innovation, where rhythm and synchronized movements created a visual spectacle on stage.', featured: false },
+                { src: '/3.webp', title: 'Live Musical Performance', desc: 'Electrifying band performance filling the atmosphere with energy, passion, and rhythm.', featured: false },
+                { src: '/4.webp', title: 'Channel Surfing Event', desc: 'Channel Surfing brought vibrant energy to the stage, reflecting the spirit of fun and imagination.', featured: false },
+                { src: '/6.webp', title: 'Special Walk-in Guest Appearance – Arivu', desc: 'A surprise appearance by Arivu brought excitement and joy to the cultural celebrations.', featured: false },
+                { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony', featured: false }
               ].map((item, idx) => (
                 <motion.div
                   key={item.src}
@@ -760,32 +760,32 @@ export default function LandingPage() {
               {[
                 { 
                   src: '/1.webp', 
-                  title: 'Opening Ceremony', 
-                  desc: 'The grand inauguration of EnGenia 2025 with spectacular performances and cultural displays',
+                  title: 'Valedictory Ceremony – ENGENIA 2024',
+                  desc: 'The Valedictory Ceremony of ENGENIA 2024 at Loyola-ICAM College of Engineering and Technology (LICET), graced by Chief Guest T. J. Gnanavel, renowned film director and screenwriter.',
                   layout: 'hero'
                 },
                 { 
                   src: '/2.webp', 
-                  title: 'Dance Performances', 
-                  desc: 'Mesmerizing cultural dance shows showcasing the rich heritage of Indian classical and folk traditions',
+                  title: 'Cultural Dance Extravaganza',
+                  desc: 'A captivating group performance blending artistry and innovation, where rhythm and synchronized movements created a visual spectacle on stage',
                   layout: 'left'
                 },
                 { 
                   src: '/3.webp', 
-                  title: 'Music Concert', 
-                  desc: 'Melodious evening performances featuring both classical and contemporary musical expressions',
+                  title: 'Live Musical Performance', 
+                  desc: 'Electrifying band performance filling the atmosphere with energy, passion, and rhythm.',
                   layout: 'right'
                 },
                 { 
                   src: '/4.webp', 
-                  title: 'Drama Competition', 
-                  desc: 'Theatrical excellence on stage with compelling storytelling and outstanding performances',
+                  title: 'Channel Surfing Event',
+                  desc: 'Channel Surfing brought vibrant energy to the stage, reflecting the spirit of fun and imagination.',
                   layout: 'left'
                 },
                 {
                   src: '/6.webp',
-                  title: 'Walk-in Guest',
-                  desc: 'A surprise walk-in guest with students enjoying the moment',
+                  title: 'Special Walk-in Guest Appearance – Arivu',
+                  desc: 'A surprise appearance by Arivu brought excitement and joy to the cultural celebrations.',
                   layout: 'right'
                 },
                 { 

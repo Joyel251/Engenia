@@ -2,7 +2,12 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence, LayoutGroup } from "motion/react"
-import { Trophy, Medal, Award, Users, Star, ChevronRight, RefreshCw, Table2, Grid } from "lucide-react"
+import { Trophy, Medal, Award, Users, Star, ChevronRight, RefreshCw, Table2, Grid, Lock } from "lucide-react"
+
+interface Settings {
+  leaderboardVisible: boolean
+  lockdown: boolean
+}
 
 interface DepartmentRanking {
   id: string
@@ -34,7 +39,9 @@ interface DepartmentRanking {
 
 interface LeaderboardProps {
   departments: DepartmentRanking[]
+  settings?: Settings | null
   showPodium?: boolean // controls whether top 3 podium is visible
+  locked?: boolean     // controls whether leaderboard is locked
   live?: boolean        // enable live updates
   pollIntervalMs?: number // polling interval in ms
 }
@@ -60,11 +67,12 @@ const PODIUM_COLORS = {
   }
 }
 
-export default function Leaderboard({ departments, showPodium = true, live = false, pollIntervalMs = 5000 }: LeaderboardProps) {
+export default function Leaderboard({ departments, settings, showPodium = true, locked = false, live = false, pollIntervalMs = 5000 }: LeaderboardProps) {
   const [selectedDept, setSelectedDept] = useState<string | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [animateCards, setAnimateCards] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  
   // Recompute initial points purely from winners' event points so all totals are consistent
   const initialComputed = departments.map(d => {
     const recomputed = d.winners.reduce((sum, w) => {
@@ -73,6 +81,7 @@ export default function Leaderboard({ departments, showPodium = true, live = fal
     }, 0)
     return { ...d, points: recomputed }
   })
+  
   const [data, setData] = useState<DepartmentRanking[]>(initialComputed)
   const prevRanksRef = useRef<Record<string, number>>({})
   const prevPointsRef = useRef<Record<string, number>>({})
@@ -238,6 +247,20 @@ export default function Leaderboard({ departments, showPodium = true, live = fal
 
   return (
     <div className="w-full max-w-6xl mx-auto">
+      {/* Locked State */}
+      {settings?.lockdown && (
+        <div className="mb-6 p-6 bg-slate-800/50 border-2 border-amber-500/30 rounded-2xl backdrop-blur-sm">
+          <div className="flex items-center justify-center space-x-3">
+            <Lock className="w-6 h-6 text-amber-400" />
+            <h3 className="text-xl font-semibold text-amber-400">Leaderboard Locked</h3>
+          </div>
+          <p className="text-center text-slate-300 mt-2">Rankings are currently hidden during the event</p>
+        </div>
+      )}
+
+      {/* Show leaderboard only if not locked or if leaderboard is visible */}
+      {(!settings?.lockdown || settings?.leaderboardVisible) && (
+        <>
       {/* Compact header controls */}
       <div className="flex flex-wrap items-center justify-end mb-6 gap-3">
         <div className="flex items-center gap-2 bg-zinc-800/50 rounded-full p-1 pr-2">
@@ -305,14 +328,12 @@ export default function Leaderboard({ departments, showPodium = true, live = fal
                             <div className="flex items-center gap-2">
                               <span className="text-base font-bold">{dept.rank}</span>
                               {rankChange !== 0 && (
-                                <motion.span
-                                  initial={{ opacity: 0, y: rankChange < 0 ? 4 : -4 }}
-                                  animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: rankChange < 0 ? -4 : 4 }}
-                                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium ${rankChange < 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400'}`}
-                                >
-                                  {rankChange < 0 ? `↑${Math.abs(rankChange)}` : `↓${Math.abs(rankChange)}`}
-                                </motion.span>
+                                <motion.div
+                                  initial={{ scale: 0.8, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  exit={{ opacity: 0 }}
+                                  className={`w-2 h-2 rounded-full ${rankChange < 0 ? 'bg-emerald-400' : 'bg-red-400'}`}
+                                />
                               )}
                             </div>
                           </td>
@@ -327,14 +348,14 @@ export default function Leaderboard({ departments, showPodium = true, live = fal
                               <motion.span key={dept.points} initial={{ scale: 1.15, color: '#22d3ee' }} animate={{ scale: 1, color: '#ffffff' }} className="text-white">
                                 {dept.points.toLocaleString()}
                               </motion.span>
-                              {pointsChange !== 0 && (
+                              {pointsChange > 0 && (
                                 <motion.span
-                                  initial={{ opacity: 0, y: pointsChange > 0 ? 4 : -4 }}
+                                  initial={{ opacity: 0, y: 4 }}
                                   animate={{ opacity: 1, y: 0 }}
-                                  exit={{ opacity: 0, y: pointsChange > 0 ? -4 : 4 }}
-                                  className={`text-[10px] font-medium ${pointsChange > 0 ? 'text-emerald-400' : 'text-red-400'}`}
+                                  exit={{ opacity: 0, y: -4 }}
+                                  className="text-[10px] font-medium text-emerald-400 ml-2"
                                 >
-                                  {pointsChange > 0 ? `+${pointsChange}` : pointsChange}
+                                  +{pointsChange}
                                 </motion.span>
                               )}
                             </div>
@@ -378,7 +399,7 @@ export default function Leaderboard({ departments, showPodium = true, live = fal
                   <div className="flex flex-col items-center w-10">
                     <span className="text-sm font-bold text-zinc-200">{dept.rank}</span>
                     {rankChange !== 0 && (
-                      <span className={`text-[10px] font-medium ${rankChange < 0 ? 'text-emerald-400' : 'text-red-400'}`}>{rankChange < 0 ? `↑${Math.abs(rankChange)}` : `↓${Math.abs(rankChange)}`}</span>
+                      <div className={`w-2 h-2 rounded-full mt-0.5 ${rankChange < 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -692,6 +713,8 @@ export default function Leaderboard({ departments, showPodium = true, live = fal
           </motion.div>
         )}
       </AnimatePresence>
+      </>
+      )}
     </div>
   )
 }

@@ -1,22 +1,34 @@
-import prisma from '../../../../../lib/prisma';
+import { supabaseAdmin, TABLES } from '../../../../../lib/supabase';
 
 // ✅ Get all winners for a specific event
 export async function GET(req, { params }) {
-  const { id } = params; // eventId
+  try {
+    const { id } = params; // eventId
 
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: {
-      winners: {
-        include: { department: true },
-        orderBy: { position: 'asc' }, // 1st → 2nd → 3rd
-      },
-    },
-  });
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from(TABLES.EVENTS)
+      .select(`
+        *,
+        winners:Winner(
+          *,
+          department:Department(*)
+        )
+      `)
+      .eq('id', id)
+      .single();
 
-  if (!event) {
-    return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
+    if (eventError && eventError.code === 'PGRST116') {
+      return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
+    }
+
+    if (eventError) throw eventError;
+
+    // Sort winners by position (1st → 2nd → 3rd)
+    const sortedWinners = event.winners.sort((a, b) => a.position - b.position);
+
+    return new Response(JSON.stringify(sortedWinners), { status: 200 });
+  } catch (error) {
+    console.error('Error fetching event winners:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
   }
-
-  return new Response(JSON.stringify(event.winners), { status: 200 });
 }

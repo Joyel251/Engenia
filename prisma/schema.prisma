@@ -57,6 +57,7 @@ model Settings {
   id                 String  @id @default(cuid())
   leaderboardVisible Boolean @default(true)
   lockdown           Boolean @default(false)
+  showPodium         Boolean @default(true)
 }
 
 model Admin {

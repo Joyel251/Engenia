@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { supabaseAdmin, TABLES } from "@/lib/supabase";
 
 export async function PUT(req, { params }) {
   const { id } = params;
   const body = await req.json();
 
   try {
-    const updated = await prisma.announcement.update({
-      where: { id },
-      data: { title: body.title, content: body.content },
-    });
+    const { data: updated, error } = await supabaseAdmin
+      .from(TABLES.ANNOUNCEMENTS)
+      .update({ 
+        title: body.title, 
+        content: body.content 
+      })
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
     return NextResponse.json(updated);
   } catch (err) {
     console.error("Error updating announcement:", err);
@@ -21,7 +29,13 @@ export async function DELETE(req, { params }) {
   const { id } = params;
 
   try {
-    await prisma.announcement.delete({ where: { id } });
+    const { error } = await supabaseAdmin
+      .from(TABLES.ANNOUNCEMENTS)
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
     return NextResponse.json({ message: "Announcement deleted" });
   } catch (err) {
     console.error("Error deleting announcement:", err);

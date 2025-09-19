@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { supabaseAdmin, TABLES } from '@/lib/supabase';
 import Leaderboard from "@/components/Leaderboard"
 import nextDynamic from 'next/dynamic'
 
@@ -13,7 +13,7 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
       return await fn()
     } catch (e: any) {
       lastErr = e
-      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break
+      if (e?.code && !/PGRST|network/i.test(e.code)) break
     }
   }
   throw lastErr
@@ -60,19 +60,32 @@ interface DepartmentRanking {
 export default async function LeaderboardPage() {
   try {
     // Fetch settings for podium visibility with retry
-  const settings = await withRetry(() => prisma.settings.findFirst()) as { leaderboardVisible?: boolean } | null
+  const settings = await withRetry(async () => {
+    const { data, error } = await supabaseAdmin
+      .from(TABLES.SETTINGS)
+      .select('leaderboardVisible, lockdown, showPodium')
+      .limit(1);
+    if (error && error.code !== 'PGRST116') throw error;
+    return data && data.length > 0 ? data[0] : { leaderboardVisible: true, lockdown: false, showPodium: false };
+  }) as { leaderboardVisible?: boolean; lockdown?: boolean; showPodium?: boolean } | null
 
     // Fetch departments with their winners and achievements (retry to survive transient network issue)
-    const departments = await withRetry(() => prisma.department.findMany({
-      include: {
-        achievements: true,
-        winners: {
-          include: { event: true },
-          orderBy: { event: { date: 'desc' } }
-        }
-      },
-      orderBy: { points: 'desc' }
-    })) as any[]
+    const departments = await withRetry(async () => {
+      const { data, error } = await supabaseAdmin
+        .from(TABLES.DEPARTMENTS)
+        .select(`
+          *,
+          achievements:Achievement(*),
+          winners:Winner(
+            *,
+            event:Event(*)
+          )
+        `)
+        .order('points', { ascending: false });
+      
+      if (error) throw error;
+      return data;
+    }) as any[]
 
   // Calculate detailed rankings and statistics (points derived from winners' event points)
   const departmentRankings: DepartmentRanking[] = (departments as any[]).map((dept: any) => {
@@ -155,7 +168,11 @@ export default async function LeaderboardPage() {
 
           <AnimatedPageContent>
             {/* Leaderboard Component */}
-            <Leaderboard departments={departmentRankings} showPodium={Boolean(settings?.leaderboardVisible)} />
+            <Leaderboard 
+              departments={departmentRankings} 
+              showPodium={Boolean(settings?.showPodium)}
+              locked={Boolean(settings?.lockdown)}
+            />
           </AnimatedPageContent>
         </div>
       </PageIntroAnimation>

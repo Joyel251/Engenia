@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
+import { supabaseAdmin, TABLES } from '@/lib/supabase';
 
 // Simple bounded retry for transient connection failures
 async function withRetry(fn, attempts = 3, delayMs = 250) {
@@ -13,7 +13,7 @@ async function withRetry(fn, attempts = 3, delayMs = 250) {
       return await fn();
     } catch (e) {
       lastErr = e;
-      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break;
+      if (e?.code && !/PGRST|network/i.test(e.code)) break;
     }
   }
   throw lastErr;
@@ -23,17 +23,30 @@ export async function GET() {
   try {
     console.log('🔍 Environment check:');
     console.log('NODE_ENV:', process.env.NODE_ENV);
-    console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
-    console.log('DATABASE_URL preview:', process.env.DATABASE_URL?.substring(0, 50) + '...');
+    console.log('SUPABASE_URL exists:', !!process.env.NEXT_PUBLIC_SUPABASE_URL);
+    console.log('SUPABASE_SERVICE_KEY exists:', !!process.env.SUPABASE_SERVICE_ROLE_KEY);
     
-    console.log('🔌 Attempting database connection...');
+    console.log('🔌 Attempting Supabase connection...');
     
     // Test connection with retry mechanism
-    await withRetry(() => prisma.$queryRaw`SELECT 1 as test`);
-    console.log('✅ Database connection successful');
+    await withRetry(async () => {
+      const { error } = await supabaseAdmin
+        .from(TABLES.EVENTS)
+        .select('id')
+        .limit(1);
+      if (error) throw error;
+    });
+    console.log('✅ Supabase connection successful');
     
     // Test basic query with retry
-    const count = await withRetry(() => prisma.event.count());
+    const { count, error } = await withRetry(async () => {
+      return await supabaseAdmin
+        .from(TABLES.EVENTS)
+        .select('*', { count: 'exact', head: true });
+    });
+    
+    if (error) throw error;
+    
     console.log('📊 Event count:', count);
     
     return NextResponse.json({ 
@@ -44,10 +57,9 @@ export async function GET() {
     });
     
   } catch (error) {
-    console.error('❌ Database health check failed after retries:');
-    console.error('Error name:', error.name);
-    console.error('Error message:', error.message);
+    console.error('❌ Supabase health check failed after retries:');
     console.error('Error code:', error.code);
+    console.error('Error message:', error.message);
     console.error('Full error:', error);
     
     return NextResponse.json({

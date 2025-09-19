@@ -5,12 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "prebuild": "prisma generate",
-    "build": "prisma generate && next build",
+    "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "prisma generate",
-    "prisma:generate": "prisma generate"
+    "lint": "next lint"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

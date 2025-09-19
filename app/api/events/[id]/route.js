@@ -1,32 +1,72 @@
-import prisma from '../../../../lib/prisma';
+import { supabaseAdmin, TABLES } from '../../../../lib/supabase';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req, { params }) {
-  const { id } = params;
-  const event = await prisma.event.findUnique({
-    where: { id },
-    include: { winners: true },
-  });
-  return new Response(JSON.stringify(event), { status: 200 });
+  try {
+    const { id } = params;
+    
+    const { data: event, error } = await supabaseAdmin
+      .from(TABLES.EVENTS)
+      .select(`
+        *,
+        winners:Winner(*)
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+
+    return new Response(JSON.stringify(event), { status: 200 });
+  } catch (error) {
+    console.error('Error fetching event:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+  }
 }
 
 export async function PUT(req, { params }) {
-  const { id } = params;
-  const body = await req.json();
-  const { name, date, status } = body;
+  try {
+    const { id } = params;
+    const body = await req.json();
+    const { name, date, status } = body;
 
-  const updatedEvent = await prisma.event.update({
-    where: { id },
-    data: { name, date: date ? new Date(date) : undefined, status },
-  });
+    const updateData = {
+      name,
+      status,
+      ...(date && { date: new Date(date).toISOString() })
+    };
 
-  return new Response(JSON.stringify(updatedEvent), { status: 200 });
+    const { data: updatedEvent, error } = await supabaseAdmin
+      .from(TABLES.EVENTS)
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return new Response(JSON.stringify(updatedEvent), { status: 200 });
+  } catch (error) {
+    console.error('Error updating event:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+  }
 }
 
 export async function DELETE(req, { params }) {
-  const { id } = params;
-  await prisma.event.delete({ where: { id } });
-  return new Response(null, { status: 204 });
+  try {
+    const { id } = params;
+    
+    const { error } = await supabaseAdmin
+      .from(TABLES.EVENTS)
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    return new Response(null, { status: 204 });
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+  }
 }

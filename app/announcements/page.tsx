@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { supabaseAdmin, TABLES } from '@/lib/supabase';
 import nextDynamic from 'next/dynamic'
 import { motion } from 'motion/react'
 import { Clock, Megaphone, Calendar } from 'lucide-react'
@@ -15,7 +15,7 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
       return await fn()
     } catch (e: any) {
       lastErr = e
-      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break
+      if (e?.code && !/PGRST|network/i.test(e.code)) break
     }
   }
   throw lastErr
@@ -44,17 +44,23 @@ export default async function AnnouncementsPage() {
   let announcements: Announcement[] = []
   
   try {
-    const rawAnnouncements = await withRetry(() => prisma.announcement.findMany({
-      orderBy: { createdAt: 'desc' }
-    })) as any[]
+    const rawAnnouncements = await withRetry(async () => {
+      const { data, error } = await supabaseAdmin
+        .from(TABLES.ANNOUNCEMENTS)
+        .select('*')
+        .order('createdAt', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }) as any[]
     
-    // Format dates for client
+    // Format announcements for client
     announcements = rawAnnouncements.map((announcement: any) => ({
       id: announcement.id,
       title: announcement.title,
       content: announcement.content,
-      createdAt: announcement.createdAt.toISOString(),
-      updatedAt: announcement.updatedAt.toISOString()
+      createdAt: announcement.createdAt,
+      updatedAt: announcement.updatedAt
     }))
   } catch (error: any) {
     console.error('[announcements] failed to fetch announcements after retries:', error)

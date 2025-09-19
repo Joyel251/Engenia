@@ -1,4 +1,4 @@
-import prisma from '@/lib/prisma';
+import { supabaseAdmin, TABLES } from '@/lib/supabase';
 import EventCards from "@/components/event-cards"
 import nextDynamic from 'next/dynamic'
 
@@ -14,8 +14,8 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
       return await fn()
     } catch (e: any) {
       lastErr = e
-      // Abort early on known non‑retryable prisma errors (e.g., validation)
-      if (e?.name && !/Prisma|Initialization|Network/i.test(e.name)) break
+      // Abort early on known non-retryable supabase errors
+      if (e?.code && !/PGRST|network/i.test(e.code)) break
     }
   }
   throw lastErr
@@ -30,20 +30,49 @@ export const runtime = 'nodejs';
 
 export default async function EventsPage() {
   let rawEvents: any[] = []
+  let settings: any = null
+  
   try {
-    rawEvents = await withRetry(() => prisma.event.findMany({
-      include: {
-        winners: { include: { department: true } }
-      },
-      orderBy: { date: 'asc' }
-    }))
+    // Fetch both events and settings
+    const [eventsResult, settingsResult] = await Promise.all([
+      withRetry(async () => {
+        const { data, error } = await supabaseAdmin
+          .from(TABLES.EVENTS)
+          .select(`
+            *,
+            winners:Winner(
+              *,
+              department:Department(*)
+            )
+          `)
+          .order('date', { ascending: true });
+        
+        if (error) throw error;
+        return data || [];
+      }),
+      withRetry(async () => {
+        const { data, error } = await supabaseAdmin
+          .from(TABLES.SETTINGS)
+          .select('*');
+        
+        if (error && error.code !== 'PGRST116') throw error;
+        return data && data.length > 0 ? data[0] : { lockdown: false };
+      })
+    ])
+    
+    rawEvents = eventsResult
+    settings = settingsResult
+    
+    // Debug logging
+    console.log('[events] Raw events from database:', rawEvents.length, rawEvents.map(e => ({ id: e.id, name: e.name })))
+    console.log('[events] Settings:', settings)
   } catch (error: any) {
     console.error('[events] failed to fetch events after retries:', error)
     // Graceful empty state on production connection failure
     rawEvents = []
   }
 
-  // Normalize nullable fields for client component expectations
+  // Normalize nullable fields and filter winners based on lock status
   const events = rawEvents.map((e: any) => ({
     id: e.id,
     name: e.name,
@@ -53,7 +82,7 @@ export default async function EventsPage() {
     date: (e.date instanceof Date ? e.date.toISOString() : e.date) as string,
     guidelines: e.guidelines ?? '',
     points: (e.points as any) ?? { 1: 0, 2: 0, 3: 0 },
-    winners: e.winners.map((w: any) => ({
+    winners: settings?.lockdown ? [] : e.winners.map((w: any) => ({
       id: w.id,
       eventId: w.eventId,
       deptId: w.deptId,
@@ -62,6 +91,8 @@ export default async function EventsPage() {
       department: w.department
     }))
   }));
+
+  console.log('[events] Final processed events:', events.length, events.map(e => ({ id: e.id, name: e.name, status: e.status })))
 
   return (
     <main className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden" aria-labelledby="events-heading">

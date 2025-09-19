@@ -1,13 +1,26 @@
-import prisma from '../../../lib/prisma';
+import { supabaseAdmin, TABLES } from '../../../lib/supabase';
+import { randomUUID } from 'crypto';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req) {
-  const winners = await prisma.winner.findMany({
-    include: { event: true, department: true },
-  });
-  return new Response(JSON.stringify(winners), { status: 200 });
+  try {
+    const { data: winners, error } = await supabaseAdmin
+      .from(TABLES.WINNERS)
+      .select(`
+        *,
+        event:Event(*),
+        department:Department(*)
+      `);
+
+    if (error) throw error;
+
+    return new Response(JSON.stringify(winners), { status: 200 });
+  } catch (error) {
+    console.error('Error fetching winners:', error);
+    return new Response(JSON.stringify({ error: 'Internal Server Error' }), { status: 500 });
+  }
 }
 
 export async function POST(req) {
@@ -21,9 +34,16 @@ export async function POST(req) {
     }
 
     // Check if position already exists for this event
-    const existingPositionWinner = await prisma.winner.findFirst({
-      where: { eventId, position }
-    });
+    const { data: existingPositionWinner, error: positionCheckError } = await supabaseAdmin
+      .from(TABLES.WINNERS)
+      .select('id')
+      .eq('eventId', eventId)
+      .eq('position', position)
+      .single();
+
+    if (positionCheckError && positionCheckError.code !== 'PGRST116') {
+      throw positionCheckError;
+    }
 
     if (existingPositionWinner) {
       return new Response(JSON.stringify({ 
@@ -32,9 +52,16 @@ export async function POST(req) {
     }
 
     // Check if department already has a winner for this event
-    const existingDeptWinner = await prisma.winner.findFirst({
-      where: { eventId, deptId }
-    });
+    const { data: existingDeptWinner, error: deptCheckError } = await supabaseAdmin
+      .from(TABLES.WINNERS)
+      .select('id')
+      .eq('eventId', eventId)
+      .eq('deptId', deptId)
+      .single();
+
+    if (deptCheckError && deptCheckError.code !== 'PGRST116') {
+      throw deptCheckError;
+    }
 
     if (existingDeptWinner) {
       return new Response(JSON.stringify({ 
@@ -43,7 +70,14 @@ export async function POST(req) {
     }
 
     // 1️⃣ Fetch event to get points mapping
-    const event = await prisma.event.findUnique({ where: { id: eventId } });
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from(TABLES.EVENTS)
+      .select('*')
+      .eq('id', eventId)
+      .single();
+
+    if (eventError) throw eventError;
+
     if (!event) {
       return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
     }
@@ -51,35 +85,64 @@ export async function POST(req) {
     // 2️⃣ Get points for the winner based on position
     let pointsForPosition = event.points[position] || 0;
 
-    // 3️⃣ Create winner
-    const newWinner = await prisma.winner.create({
-      data: { eventId, deptId, position, studentName: studentName || null },
-    });
+    // 3️⃣ Create winner with explicit UUID
+    const winnerId = randomUUID();
+    const { data: newWinner, error: winnerError } = await supabaseAdmin
+      .from(TABLES.WINNERS)
+      .insert([{ 
+        id: winnerId,
+        eventId, 
+        deptId, 
+        position, 
+        studentName: studentName || null 
+      }])
+      .select(`
+        *,
+        event:Event(*),
+        department:Department(*)
+      `)
+      .single();
+
+    if (winnerError) throw winnerError;
 
     // 4️⃣ Update department points
-    const dept = await prisma.department.findUnique({ where: { id: deptId } });
+    const { data: dept, error: deptError } = await supabaseAdmin
+      .from(TABLES.DEPARTMENTS)
+      .select('points')
+      .eq('id', deptId)
+      .single();
+
+    if (deptError) throw deptError;
+
     const newPoints = Math.max((dept?.points || 0) + pointsForPosition, 0); // no negative points
 
-    await prisma.department.update({
-      where: { id: deptId },
-      data: { points: newPoints },
-    });
+    const { error: updateError } = await supabaseAdmin
+      .from(TABLES.DEPARTMENTS)
+      .update({ points: newPoints })
+      .eq('id', deptId);
+
+    if (updateError) throw updateError;
 
     // 5️⃣ Check if event now has all 3 winners (1st, 2nd, 3rd) and mark as completed
-    const totalWinners = await prisma.winner.count({
-      where: { eventId }
-    });
+    const { count: totalWinners, error: countError } = await supabaseAdmin
+      .from(TABLES.WINNERS)
+      .select('*', { count: 'exact', head: true })
+      .eq('eventId', eventId);
+
+    if (countError) throw countError;
 
     if (totalWinners >= 3) {
-      await prisma.event.update({
-        where: { id: eventId },
-        data: { status: 'COMPLETED' },
-      });
+      const { error: eventUpdateError } = await supabaseAdmin
+        .from(TABLES.EVENTS)
+        .update({ status: 'COMPLETED' })
+        .eq('id', eventId);
+
+      if (eventUpdateError) throw eventUpdateError;
     }
 
     return new Response(JSON.stringify(newWinner), { status: 201 });
   } catch (error) {
-    console.error(error);
+    console.error('Error in winners POST:', error);
     return new Response(JSON.stringify({ error: 'Something went wrong' }), { status: 500 });
   }
 }

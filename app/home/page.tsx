@@ -5,7 +5,7 @@ import BubbleMenu from "@/components/BubbleMenu"
 import LocomotiveScrollProvider from "@/components/locomotive-scroll-provider"
 import { useState, useEffect, useRef } from "react"
 import { motion, useReducedMotion } from "framer-motion"
-import { MapPin, Users, Music, Mic, Palette, Film, BookOpen, Award, Zap, Heart } from "lucide-react"
+import { MapPin, Users, Music, Mic, Palette, Film } from "lucide-react"
 
 const menuItems = [
   {
@@ -266,7 +266,6 @@ export default function LandingPage() {
               stiffness: 120
             }}
           >
-            <BookOpen className="w-12 h-12 text-purple-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-3 text-white font-mono">Academic Excellence</h3>
           </motion.div>
           <motion.p
@@ -311,7 +310,6 @@ export default function LandingPage() {
               stiffness: 120
             }}
           >
-            <Zap className="w-12 h-12 text-blue-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-3 text-white font-mono">Professionalism</h3>
           </motion.div>
           <motion.p
@@ -356,7 +354,6 @@ export default function LandingPage() {
               stiffness: 120
             }}
           >
-            <Heart className="w-12 h-12 text-pink-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-3 text-white font-mono">Holistic Formation</h3>
           </motion.div>
           <motion.p
@@ -401,7 +398,6 @@ export default function LandingPage() {
               stiffness: 120
             }}
           >
-            <Award className="w-12 h-12 text-amber-400 mx-auto mb-4" />
             <h3 className="text-xl font-bold mb-3 text-white font-mono">International Exposure</h3>
           </motion.div>
           <motion.p

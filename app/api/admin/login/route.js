@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import prisma from "@/lib/prisma";
+import { supabaseAdmin, TABLES } from "@/lib/supabase";
 import { comparePassword } from "@/lib/auth";
 import { generateTokenEdge } from "@/lib/edge-auth";
 
@@ -8,11 +8,18 @@ export async function POST(req) {
     const { username, password } = await req.json();
     console.log("🔍 Admin login attempt:", username);
 
-    const admin = await prisma.admin.findUnique({ where: { username } });
-    if (!admin) {
+    const { data: admin, error } = await supabaseAdmin
+      .from(TABLES.ADMIN)
+      .select('*')
+      .eq('username', username)
+      .single();
+
+    if (error && error.code === 'PGRST116') {
       console.log("❌ Admin not found:", username);
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
+
+    if (error) throw error;
 
     const valid = await comparePassword(password, admin.password);
     if (!valid) {

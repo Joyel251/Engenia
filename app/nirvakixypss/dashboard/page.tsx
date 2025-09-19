@@ -331,6 +331,36 @@ export default function AdminDashboard() {
     router.push('/nirvakixypss')
   }
 
+  const handleSystemReset = async () => {
+    const confirmText = prompt('Type reset to confirm full competition reset:')
+    if ((confirmText || '').trim().toLowerCase() !== 'reset') return
+    setIsSubmitting(true)
+    try {
+      const token = localStorage.getItem('admin_token')
+      const res = await fetch('/api/admin/reset', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (res.ok) {
+        toast.success('Competition reset complete')
+        // Reload initial data to reflect cleared winners/points/settings
+        await fetchInitialData()
+        setSelectedEvent(null)
+        setActiveTab('events')
+        // Force a page refresh so server components re-fetch
+        router.refresh()
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.error || 'System reset failed')
+      }
+    } catch (e) {
+      console.error('System reset error:', e)
+      toast.error('Network error during reset')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   const handleCreateAnnouncement = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -537,7 +567,16 @@ export default function AdminDashboard() {
                 </div>
               )}
               
-              {/* Logout Button */}
+              {/* System Reset + Logout Buttons */}
+              <button
+                onClick={handleSystemReset}
+                disabled={isSubmitting}
+                className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors font-medium border-2 border-orange-500/50 w-full sm:w-auto disabled:opacity-50"
+                title="Deletes all winners, resets points, and resets settings"
+              >
+                <RotateCcw className="w-4 h-4" />
+                <span>Reset</span>
+              </button>
               <button
                 onClick={handleLogout}
                 className="flex items-center justify-center space-x-2 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors font-medium border-2 border-red-500/50 w-full sm:w-auto"

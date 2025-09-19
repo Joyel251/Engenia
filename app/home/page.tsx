@@ -554,7 +554,7 @@ export default function LandingPage() {
                 { src: '/3.webp', title: 'Live Musical Performance', desc: 'Electrifying band performance filling the atmosphere with energy, passion, and rhythm.' },
                 { src: '/4.webp', title: 'Channel Surfing Event', desc: 'Channel Surfing brought vibrant energy to the stage, reflecting the spirit of fun and imagination.' },
                 { src: '/6.webp', title: 'Special Walk-in Guest Appearance – Arivu', desc: 'A surprise appearance by Arivu brought excitement and joy to the cultural celebrations.' },
-                { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony' }
+                { src: '/5.webp', title: 'Celebrating the Champions', desc: 'The winners of the cultural extravaganza proudly celebrating their achievements on the grand stage.' }
                 
               ].map((item, idx) => (
                 <motion.div
@@ -657,7 +657,7 @@ export default function LandingPage() {
                 { src: '/3.webp', title: 'Live Musical Performance', desc: 'Electrifying band performance filling the atmosphere with energy, passion, and rhythm.', featured: false },
                 { src: '/4.webp', title: 'Channel Surfing Event', desc: 'Channel Surfing brought vibrant energy to the stage, reflecting the spirit of fun and imagination.', featured: false },
                 { src: '/6.webp', title: 'Special Walk-in Guest Appearance – Arivu', desc: 'A surprise appearance by Arivu brought excitement and joy to the cultural celebrations.', featured: false },
-                { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony', featured: false }
+                { src: '/5.webp', title: 'Celebrating the Champions', desc: 'The winners of the cultural extravaganza proudly celebrating their achievements on the grand stage.', featured: false }
               ].map((item, idx) => (
                 <motion.div
                   key={item.src}
@@ -790,8 +790,8 @@ export default function LandingPage() {
                 },
                 { 
                   src: '/5.webp', 
-                  title: 'Grand Finale', 
-                  desc: 'The spectacular closing ceremony celebrating creativity, talent, and the spirit of EnGenia',
+                  title: 'Celebrating the Champions',
+                  desc: 'The winners of the cultural extravaganza proudly celebrating their achievements on the grand stage.',
                   layout: 'center'
                 }
                 

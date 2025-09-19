@@ -5,7 +5,8 @@ import BubbleMenu from "@/components/BubbleMenu"
 import LocomotiveScrollProvider from "@/components/locomotive-scroll-provider"
 import { useState, useEffect, useRef } from "react"
 import { motion, useReducedMotion } from "framer-motion"
-import { MapPin, Users, Music, Mic, Palette, Film } from "lucide-react"
+import { Users } from "lucide-react"
+import Image from "next/image"
 
 const menuItems = [
   {
@@ -510,202 +511,571 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Events Section */}
-        <section className="min-h-screen py-20 bg-gradient-to-b from-black via-purple-950/20 to-black relative">
+       {/* Cultural Gallery Section (replaces Featured Events & Join Now) */}
+        <section className="min-h-screen py-20 relative bg-gradient-to-b from-black via-zinc-900/30 to-black">
+          {/* Ambient particles */}
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 6 : 20))].map((_, i) => (
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 4 : 12))].map((_, i) => (
               <motion.div
-                key={`events-${i}`}
-                className={`absolute bg-white/4 ${isMobile ? '' : 'backdrop-blur-sm'} border border-white/10 rounded-lg`}
+                key={`gallery-ambient-${i}`}
+                className="absolute bg-white/5 rounded-full"
                 style={{
-                  width: `${6 + (i % 4) * (isMobile ? 2 : 3)}px`,
-                  height: `${6 + (i % 4) * (isMobile ? 2 : 3)}px`,
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
+                  width: `${4 + (i % 3) * 2}px`,
+                  height: `${4 + (i % 3) * 2}px`,
+                  left: `${(i * 97) % 100}%`,
+                  top: `${(i * 53) % 100}%`,
                 }}
                 animate={{
-                  y: prefersReducedMotion ? 0 : [-(isMobile ? 8 : 20), (isMobile ? 8 : 20), -(isMobile ? 8 : 20)],
                   opacity: [0, 0.6, 0],
-                  rotate: prefersReducedMotion ? 0 : [0, 360],
-                  scale: prefersReducedMotion ? 1 : [0.7, (isMobile ? 1.2 : 1.5), 0.7],
+                  y: prefersReducedMotion ? 0 : [0, (i % 2 ? 20 : -20), 0],
                 }}
-                transition={{
-                  duration: (isMobile ? 6 : 8) + i * 0.15,
-                  repeat: Infinity,
-                  delay: i * 0.3,
-                  ease: "easeInOut",
-                }}
+                transition={{ duration: 6 + i * 0.3, repeat: Infinity, ease: "easeInOut", delay: i * 0.2 }}
               />
             ))}
           </div>
 
-          <div className="container mx-auto px-4">
-            <motion.div 
-              className="text-center mb-20"
-              initial={isMobile ? { y: 16 } : { opacity: 0, scale: 0.8 }}
-              whileInView={isMobile ? { y: 0 } : { opacity: 1, scale: 1 }}
-              transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
-              viewport={{ once: false }}
+          <div className="container mx-auto px-4 relative z-10">
+            <motion.div
+              className="text-center mb-16"
+              initial={isMobile ? { y: 16 } : { opacity: 0, y: 20 }}
+              whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
             >
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-4 font-mono">Featured Events</h2>
-              <p className="text-xl text-white max-w-2xl mx-auto font-serif">
-                On-stage and off-stage competitions showcasing diverse talents
-              </p>
+              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 font-mono">Cultural Highlights</h2>
+              <p className="text-lg sm:text-xl text-zinc-300 max-w-2xl mx-auto font-serif">A glimpse of LICET's vibrant cultural spirit</p>
             </motion.div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+            {/* Mobile: Vertical scroll gallery with animations */}
+            <div className="md:hidden space-y-8">
               {[
-                {
-                  icon: Music,
-                  title: "Dance Competition",
-                  desc: "20-25 participants per team, 9 minutes total (7 mins performance + 2 mins preparation). Minimum 3 dance styles required.",
-                  location: "Main Stage • On-Stage Event",
-                  color: "purple"
-                },
-                {
-                  icon: Film,
-                  title: "Short Film",
-                  desc: "6-8 minutes duration with theme \"Silver Years\". Subtitles required. Industrial standards recommended with 2K resolution.",
-                  location: "Media Center • On-Stage Event",
-                  color: "blue"
-                },
-                {
-                  icon: Mic,
-                  title: "Music Competition",
-                  desc: "12-18 participants including band manager. 10 minutes performance + 2 minutes preparation. Fusion not allowed, lyrics must be pre-approved.",
-                  location: "Concert Hall • On-Stage Event",
-                  color: "pink"
-                },
-                {
-                  icon: Palette,
-                  title: "Theme Show",
-                  desc: "18-25 participants per department. Theme: \"Promising Beacons\". 7 minutes performance + 2 minutes preparation time.",
-                  location: "Main Stage • On-Stage Event",
-                  color: "amber"
-                }
-              ].map((event, index) => (
+                { src: '/1.webp', title: 'Opening Ceremony', desc: 'The grand inauguration of EnGenia 2025' },
+                { src: '/2.webp', title: 'Dance Performances', desc: 'Mesmerizing cultural dance shows' },
+                { src: '/3.webp', title: 'Music Concert', desc: 'Melodious evening performances' },
+                { src: '/4.webp', title: 'Drama Competition', desc: 'Theatrical excellence on stage' },
+                { src: '/6.webp', title: 'Walk-in Guest', desc: 'A surprise walk-in guest — students enjoying the moment' },
+                { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony' }
+                
+              ].map((item, idx) => (
                 <motion.div
-                  key={event.title}
-                  className="group cursor-pointer"
+                  key={item.src}
+                  className="group"
                   initial={{ 
                     opacity: 0, 
-                    x: index % 2 === 0 ? -100 : 100,
+                    y: 80,
+                    scale: 0.9,
                     rotateX: 15
                   }}
                   whileInView={{ 
                     opacity: 1, 
-                    x: 0,
+                    y: 0,
+                    scale: 1,
                     rotateX: 0
                   }}
-                  transition={{ 
-                    duration: 1, 
-                    delay: 0.2 + index * 0.2,
-                    type: "spring",
-                    stiffness: 80
+                  viewport={{ 
+                    once: false, 
+                    amount: 0.2,
+                    margin: "-50px 0px -50px 0px"
                   }}
-                  viewport={{ once: false }}
-                  whileHover={{ 
-                    scale: 1.05, 
-                    rotateY: 5,
-                    transition: { duration: 0.3 }
+                  transition={{ 
+                    duration: 0.8, 
+                    delay: idx * 0.15,
+                    type: "spring",
+                    stiffness: 80,
+                    damping: 15
+                  }}
+                  whileInView2={{
+                    scale: [0.9, 1.02, 1],
+                    transition: { duration: 0.6, delay: idx * 0.1 }
                   }}
                 >
-                  <div className={`bg-gradient-to-br from-${event.color}-500/20 to-${event.color}-600/20 p-10 rounded-3xl border border-${event.color}-400/30 hover:border-${event.color}-400/60 transition-all duration-500 backdrop-blur-sm`}>
-                    <div className="flex items-center gap-4 mb-6">
-                      <event.icon className={`w-10 h-10 text-${event.color}-400`} />
-                      <h3 className={`text-3xl font-bold text-${event.color}-400 font-mono`}>{event.title}</h3>
-                    </div>
-                    <p className="text-gray-300 mb-6 text-lg leading-relaxed font-serif">
-                      {event.desc}
-                    </p>
-                    <div className="flex items-center gap-3 text-gray-400">
-                      <MapPin className="w-5 h-5" />
-                      <span>{event.location}</span>
+                  <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-zinc-900/60 backdrop-blur-sm shadow-2xl">
+                    <div className="relative aspect-[16/10]">
+                      <Image
+                        src={item.src}
+                        alt={item.title}
+                        fill
+                        sizes="(max-width: 768px) 100vw, 400px"
+                        priority={idx < 2}
+                        className="object-cover transition-all duration-1000 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      
+                      {/* Animated overlay elements */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -skew-x-12"
+                        initial={{ x: '-100%' }}
+                        whileInView={{ x: '100%' }}
+                        viewport={{ once: false, amount: 0.3 }}
+                        transition={{ 
+                          duration: 1.2, 
+                          delay: 0.3 + idx * 0.2,
+                          ease: "easeInOut"
+                        }}
+                      />
+                      
+                      {/* Content overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-6">
+                        <motion.div
+                          initial={{ y: 30, opacity: 0 }}
+                          whileInView={{ y: 0, opacity: 1 }}
+                          viewport={{ once: false, amount: 0.3 }}
+                          transition={{ delay: 0.4 + idx * 0.15, duration: 0.6 }}
+                        >
+                          <motion.h3 
+                            className="text-white font-bold text-xl mb-2 font-mono"
+                            initial={{ x: -20 }}
+                            whileInView={{ x: 0 }}
+                            transition={{ delay: 0.5 + idx * 0.15, duration: 0.5 }}
+                          >
+                            {item.title}
+                          </motion.h3>
+                          <motion.p 
+                            className="text-white/70 text-sm font-serif mb-4"
+                            initial={{ x: -20, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.6 + idx * 0.15, duration: 0.5 }}
+                          >
+                            {item.desc}
+                          </motion.p>
+                          <motion.div 
+                            className="h-0.5 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full"
+                            initial={{ width: 0 }}
+                            whileInView={{ width: '60px' }}
+                            transition={{ delay: 0.7 + idx * 0.15, duration: 0.8 }}
+                          />
+                        </motion.div>
+                      </div>
                     </div>
                   </div>
                 </motion.div>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* Experience Section */}
-        <section className="min-h-screen flex items-center justify-center py-20 relative">
-          <div className="absolute inset-0 pointer-events-none">
-            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 8 : 25))].map((_, i) => (
-              <motion.div
-                key={`experience-${i}`}
-                className="absolute w-1 h-1 bg-white/15 rounded-full"
-                style={{
-                  left: `${Math.random() * 100}%`,
-                  top: `${Math.random() * 100}%`,
-                }}
-                animate={{
-                  opacity: [0, 1, 0],
-                  scale: prefersReducedMotion ? 1 : [0, (isMobile ? 1.2 : 2), 0],
-                  y: prefersReducedMotion ? 0 : [-(isMobile ? 8 : 20), (isMobile ? 8 : 20), -(isMobile ? 8 : 20)],
-                }}
-                transition={{
-                  duration: (isMobile ? 3 : 4) + Math.random() * (isMobile ? 2 : 3),
-                  repeat: Infinity,
-                  delay: Math.random() * 4,
-                  ease: "easeInOut",
-                }}
-              />
-            ))}
-          </div>
+            {/* Tablet: Vertical scroll grid with animations */}
+            <div className="hidden md:grid lg:hidden grid-cols-1 gap-10 max-w-2xl mx-auto">
+              {[
+                { src: '/1.webp', title: 'Opening Ceremony', desc: 'The grand inauguration of EnGenia 2025', featured: true },
+                { src: '/2.webp', title: 'Dance Performances', desc: 'Mesmerizing cultural dance shows', featured: false },
+                { src: '/3.webp', title: 'Music Concert', desc: 'Melodious evening performances', featured: false },
+                { src: '/4.webp', title: 'Drama Competition', desc: 'Theatrical excellence on stage', featured: false },
+                { src: '/5.webp', title: 'Grand Finale', desc: 'The spectacular closing ceremony', featured: false },
+                { src: '/6.webp', title: 'Walk-in Guest', desc: 'A surprise walk-in guest — students enjoying the moment', featured: false }
+              ].map((item, idx) => (
+                <motion.div
+                  key={item.src}
+                  className="group cursor-pointer"
+                  initial={{ 
+                    opacity: 0, 
+                    y: 100,
+                    rotateX: 20,
+                    scale: 0.95 
+                  }}
+                  whileInView={{ 
+                    opacity: 1, 
+                    y: 0,
+                    rotateX: 0,
+                    scale: 1 
+                  }}
+                  viewport={{ 
+                    once: false, 
+                    amount: 0.2,
+                    margin: "-80px 0px -80px 0px"
+                  }}
+                  transition={{ 
+                    duration: 0.9, 
+                    delay: idx * 0.2,
+                    type: "spring",
+                    stiffness: 60,
+                    damping: 15
+                  }}
+                  whileHover={{ 
+                    scale: 1.03,
+                    rotateY: idx % 2 === 0 ? 2 : -2,
+                    transition: { duration: 0.3 }
+                  }}
+                >
+                  <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-zinc-900/60 backdrop-blur-sm shadow-2xl">
+                    <div className={`relative ${item.featured ? 'aspect-[21/10]' : 'aspect-[16/9]'}`}>
+                      <Image
+                        src={item.src}
+                        alt={item.title}
+                        fill
+                        sizes="(min-width: 768px) and (max-width: 1024px) 600px, 400px"
+                        priority={idx < 2}
+                        className="object-cover transition-all duration-1000 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                      
+                      {/* Animated shine effect */}
+                      <motion.div
+                        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -skew-x-12"
+                        initial={{ x: '-120%' }}
+                        whileInView={{ x: '120%' }}
+                        viewport={{ once: false, amount: 0.3 }}
+                        transition={{ 
+                          duration: 1.5, 
+                          delay: 0.4 + idx * 0.25,
+                          ease: [0.25, 0.46, 0.45, 0.94]
+                        }}
+                      />
+                      
+                      {/* Content overlay */}
+                      <div className="absolute bottom-0 left-0 right-0 p-8">
+                        <motion.div
+                          initial={{ y: 40, opacity: 0 }}
+                          whileInView={{ y: 0, opacity: 1 }}
+                          viewport={{ once: false, amount: 0.3 }}
+                          transition={{ delay: 0.5 + idx * 0.2, duration: 0.8 }}
+                        >
+                          <motion.h3 
+                            className={`text-white font-bold mb-3 font-mono ${item.featured ? 'text-3xl' : 'text-2xl'}`}
+                            initial={{ x: -30 }}
+                            whileInView={{ x: 0 }}
+                            transition={{ delay: 0.6 + idx * 0.2, duration: 0.6 }}
+                          >
+                            {item.title}
+                          </motion.h3>
+                          <motion.p 
+                            className={`text-white/80 font-serif mb-4 ${item.featured ? 'text-lg' : 'text-base'}`}
+                            initial={{ x: -30, opacity: 0 }}
+                            whileInView={{ x: 0, opacity: 1 }}
+                            transition={{ delay: 0.7 + idx * 0.2, duration: 0.6 }}
+                          >
+                            {item.desc}
+                          </motion.p>
+                          <motion.div 
+                            className={`h-1 bg-gradient-to-r from-purple-400 to-pink-400 rounded-full ${item.featured ? 'w-24' : 'w-16'}`}
+                            initial={{ width: 0 }}
+                            whileInView={{ width: item.featured ? '96px' : '64px' }}
+                            transition={{ delay: 0.8 + idx * 0.2, duration: 1 }}
+                          />
+                        </motion.div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
 
-          <div className="container mx-auto px-4 text-center">
-            <motion.div 
-              className="mb-12"
-              initial={isMobile ? { y: 16 } : { opacity: 0, y: -30 }}
-              whileInView={isMobile ? { y: 0 } : { opacity: 1, y: 0 }}
-              transition={isMobile ? { type: 'spring', stiffness: 140, damping: 18, delay: 0.2 } : { duration: 1, delay: 0.2 }}
-              viewport={{ once: false }}
-            >
-              <h2 className="text-4xl sm:text-5xl md:text-6xl font-black text-white mb-6 font-mono">
-                Join EnGenia 2025
-              </h2>
-              <motion.p 
-                className="text-xl text-white max-w-3xl mx-auto leading-relaxed font-serif"
-                initial={{ opacity: 0, scale: 0.9 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-                viewport={{ once: false }}
-              >
-                Be part of LICET's most celebrated cultural festival where talents shine and creativity knows no bounds
-              </motion.p>
-            </motion.div>
-
-            <motion.div
-              className="flex flex-col sm:flex-row gap-6 justify-center items-center mt-16"
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-              viewport={{ once: false }}
-            >
-              <motion.button 
-                className="px-12 py-5 bg-gradient-to-r from-purple-500 to-violet-600 text-white font-bold rounded-full hover:from-purple-600 hover:to-violet-700 transition-all duration-300 text-lg shadow-2xl hover:shadow-purple-500/25 transform hover:scale-105 font-mono"
-                whileHover={{ 
-                  scale: 1.1,
-                  boxShadow: "0 20px 50px rgba(147, 51, 234, 0.4)"
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                Register Now
-              </motion.button>
-              <motion.button 
-                className="px-12 py-5 border-2 border-purple-400/50 text-purple-300 font-bold rounded-full hover:border-purple-400 hover:text-white transition-all duration-300 text-lg backdrop-blur-sm font-mono"
-                whileHover={{ 
-                  scale: 1.1,
-                  borderColor: "rgba(147, 51, 234, 0.8)",
-                  color: "#ffffff"
-                }}
-                whileTap={{ scale: 0.95 }}
-              >
-                View Schedule
-              </motion.button>
-            </motion.div>
+            {/* Desktop: Vertical scroll layout with advanced animations */}
+            <div className="hidden lg:block max-w-6xl mx-auto space-y-16">
+              {[
+                { 
+                  src: '/1.webp', 
+                  title: 'Opening Ceremony', 
+                  desc: 'The grand inauguration of EnGenia 2025 with spectacular performances and cultural displays',
+                  layout: 'hero'
+                },
+                { 
+                  src: '/2.webp', 
+                  title: 'Dance Performances', 
+                  desc: 'Mesmerizing cultural dance shows showcasing the rich heritage of Indian classical and folk traditions',
+                  layout: 'left'
+                },
+                { 
+                  src: '/3.webp', 
+                  title: 'Music Concert', 
+                  desc: 'Melodious evening performances featuring both classical and contemporary musical expressions',
+                  layout: 'right'
+                },
+                { 
+                  src: '/4.webp', 
+                  title: 'Drama Competition', 
+                  desc: 'Theatrical excellence on stage with compelling storytelling and outstanding performances',
+                  layout: 'left'
+                },
+                {
+                  src: '/6.webp',
+                  title: 'Walk-in Guest',
+                  desc: 'A surprise walk-in guest with students enjoying the moment',
+                  layout: 'right'
+                },
+                { 
+                  src: '/5.webp', 
+                  title: 'Grand Finale', 
+                  desc: 'The spectacular closing ceremony celebrating creativity, talent, and the spirit of EnGenia',
+                  layout: 'center'
+                }
+                
+              ].map((item, idx) => {
+                // Hero layout for first image
+                if (item.layout === 'hero') {
+                  return (
+                    <motion.div
+                      key={item.src}
+                      className="group cursor-pointer"
+                      initial={{ 
+                        opacity: 0, 
+                        y: 120,
+                        scale: 0.9,
+                        rotateX: 15
+                      }}
+                      whileInView={{ 
+                        opacity: 1, 
+                        y: 0,
+                        scale: 1,
+                        rotateX: 0
+                      }}
+                      viewport={{ 
+                        once: false, 
+                        amount: 0.2,
+                        margin: "-100px 0px -100px 0px"
+                      }}
+                      transition={{ 
+                        duration: 1.2, 
+                        type: "spring",
+                        stiffness: 50,
+                        damping: 15
+                      }}
+                      whileHover={{ 
+                        scale: 1.02,
+                        rotateX: -2,
+                        transition: { duration: 0.4 }
+                      }}
+                    >
+                      <div className="relative overflow-hidden rounded-3xl border border-white/30 bg-zinc-900/70 backdrop-blur-sm shadow-2xl">
+                        <div className="relative aspect-[21/9]">
+                          <Image
+                            src={item.src}
+                            alt={item.title}
+                            fill
+                            sizes="(min-width: 1024px) 1200px, 100vw"
+                            priority
+                            className="object-cover transition-all duration-1500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                          
+                          {/* Animated particles */}
+                          <div className="absolute inset-0 pointer-events-none">
+                            {[...Array(8)].map((_, i) => (
+                              <motion.div
+                                key={i}
+                                className="absolute w-1 h-1 bg-white/40 rounded-full"
+                                style={{
+                                  left: `${20 + i * 10}%`,
+                                  top: `${30 + (i % 3) * 20}%`,
+                                }}
+                                animate={{
+                                  opacity: [0, 1, 0],
+                                  scale: [0, 1, 0],
+                                  y: [0, -20, 0],
+                                }}
+                                transition={{
+                                  duration: 3,
+                                  repeat: Infinity,
+                                  delay: i * 0.3,
+                                  ease: "easeInOut"
+                                }}
+                              />
+                            ))}
+                          </div>
+                          
+                          {/* Shine effect */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12"
+                            initial={{ x: '-150%' }}
+                            whileInView={{ x: '150%' }}
+                            viewport={{ once: false, amount: 0.3 }}
+                            transition={{ 
+                              duration: 2, 
+                              delay: 0.5,
+                              ease: [0.25, 0.46, 0.45, 0.94]
+                            }}
+                          />
+                          
+                          {/* Content overlay */}
+                          <div className="absolute bottom-0 left-0 right-0 p-12">
+                            <motion.div
+                              initial={{ y: 60, opacity: 0 }}
+                              whileInView={{ y: 0, opacity: 1 }}
+                              viewport={{ once: false, amount: 0.3 }}
+                              transition={{ delay: 0.7, duration: 1 }}
+                            >
+                              <motion.h3 
+                                className="text-white font-bold text-5xl mb-4 font-mono"
+                                initial={{ x: -50 }}
+                                whileInView={{ x: 0 }}
+                                transition={{ delay: 0.8, duration: 0.8 }}
+                              >
+                                {item.title}
+                              </motion.h3>
+                              <motion.p 
+                                className="text-white/90 text-xl font-serif mb-6 max-w-3xl"
+                                initial={{ x: -50, opacity: 0 }}
+                                whileInView={{ x: 0, opacity: 1 }}
+                                transition={{ delay: 1, duration: 0.8 }}
+                              >
+                                {item.desc}
+                              </motion.p>
+                              <motion.div 
+                                className="h-1 bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 rounded-full"
+                                initial={{ width: 0 }}
+                                whileInView={{ width: '120px' }}
+                                transition={{ delay: 1.2, duration: 1.2 }}
+                              />
+                            </motion.div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )
+                }
+                
+                // Split layout for other images
+                const isLeft = item.layout === 'left'
+                const isCenter = item.layout === 'center'
+                
+                return (
+                  <motion.div
+                    key={item.src}
+                    className={`grid grid-cols-12 gap-12 items-center ${isCenter ? 'justify-center' : ''}`}
+                    initial={{ 
+                      opacity: 0, 
+                      x: isCenter ? 0 : (isLeft ? -100 : 100),
+                      y: isCenter ? 80 : 0,
+                      rotateY: isCenter ? 0 : (isLeft ? -10 : 10)
+                    }}
+                    whileInView={{ 
+                      opacity: 1, 
+                      x: 0,
+                      y: 0,
+                      rotateY: 0
+                    }}
+                    viewport={{ 
+                      once: false, 
+                      amount: 0.2,
+                      margin: "-100px 0px -100px 0px"
+                    }}
+                    transition={{ 
+                      duration: 1, 
+                      delay: idx * 0.3,
+                      type: "spring",
+                      stiffness: 60,
+                      damping: 15
+                    }}
+                  >
+                    {/* Content */}
+                    <motion.div 
+                      className={`${isCenter ? 'col-span-12 text-center' : 'col-span-5'} ${isLeft ? 'order-1' : isCenter ? 'order-1' : 'order-2'}`}
+                      initial={{ 
+                        opacity: 0, 
+                        x: isCenter ? 0 : (isLeft ? -60 : 60)
+                      }}
+                      whileInView={{ 
+                        opacity: 1, 
+                        x: 0
+                      }}
+                      transition={{ 
+                        delay: 0.4 + idx * 0.3, 
+                        duration: 0.8 
+                      }}
+                    >
+                      <motion.h3 
+                        className="text-white font-bold text-4xl mb-6 font-mono"
+                        initial={{ y: 30, opacity: 0 }}
+                        whileInView={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.6 + idx * 0.3, duration: 0.6 }}
+                      >
+                        {item.title}
+                      </motion.h3>
+                      <motion.p 
+                        className="text-white/80 text-lg font-serif mb-8 leading-relaxed"
+                        initial={{ y: 30, opacity: 0 }}
+                        whileInView={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.7 + idx * 0.3, duration: 0.6 }}
+                      >
+                        {item.desc}
+                      </motion.p>
+                      <motion.div 
+                        className={`h-1 bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full ${isCenter ? 'w-24 mx-auto' : 'w-20'}`}
+                        initial={{ width: 0 }}
+                        whileInView={{ width: isCenter ? '96px' : '80px' }}
+                        transition={{ delay: 0.8 + idx * 0.3, duration: 1 }}
+                      />
+                    </motion.div>
+                    
+                    {/* Image */}
+                    <motion.div 
+                      className={`${isCenter ? 'col-span-8 col-start-3 mt-8' : 'col-span-7'} ${isLeft ? 'order-2' : isCenter ? 'order-2' : 'order-1'} group cursor-pointer`}
+                      initial={{ 
+                        opacity: 0, 
+                        scale: 0.9,
+                        rotateY: isCenter ? 0 : (isLeft ? 15 : -15)
+                      }}
+                      whileInView={{ 
+                        opacity: 1, 
+                        scale: 1,
+                        rotateY: 0
+                      }}
+                      transition={{ 
+                        delay: 0.5 + idx * 0.3, 
+                        duration: 1,
+                        type: "spring",
+                        stiffness: 80,
+                        damping: 15
+                      }}
+                      whileHover={{ 
+                        scale: 1.03,
+                        rotateY: isLeft ? 5 : (isCenter ? 0 : -5),
+                        transition: { duration: 0.4 }
+                      }}
+                    >
+                      <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-zinc-900/60 backdrop-blur-sm shadow-xl">
+                        <div className="relative aspect-[16/10]">
+                          <Image
+                            src={item.src}
+                            alt={item.title}
+                            fill
+                            sizes="(min-width: 1024px) 700px, 100vw"
+                            className="object-cover transition-all duration-1000 group-hover:scale-110"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          
+                          {/* Animated overlay effect */}
+                          <motion.div
+                            className="absolute inset-0 bg-gradient-to-r from-transparent via-white/8 to-transparent -skew-x-12"
+                            initial={{ x: '-120%' }}
+                            whileInView={{ x: '120%' }}
+                            viewport={{ once: false, amount: 0.4 }}
+                            transition={{ 
+                              duration: 1.5, 
+                              delay: 0.8 + idx * 0.3,
+                              ease: [0.25, 0.46, 0.45, 0.94]
+                            }}
+                          />
+                          
+                          {/* Floating elements */}
+                          <div className="absolute inset-0 pointer-events-none">
+                            {[...Array(4)].map((_, i) => (
+                              <motion.div
+                                key={i}
+                                className="absolute w-1 h-1 bg-white/50 rounded-full"
+                                style={{
+                                  left: `${25 + i * 15}%`,
+                                  top: `${20 + (i % 2) * 40}%`,
+                                }}
+                                animate={{
+                                  opacity: [0, 0.8, 0],
+                                  y: [0, -15, 0],
+                                  scale: [0, 1, 0],
+                                }}
+                                transition={{
+                                  duration: 4,
+                                  repeat: Infinity,
+                                  delay: i * 0.5 + idx * 0.2,
+                                  ease: "easeInOut"
+                                }}
+                              />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </motion.div>
+                )
+              })}
+            </div>
           </div>
         </section>
       </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { motion } from "motion/react"
 import TiltedCard from "./TiltedCard"
 import EventPopup from "./EventPopup"
 import BubbleMenu from "./BubbleMenu"
@@ -88,23 +89,38 @@ export default function EventCards({ events }: EventCardsProps) {
   return (
     <>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16" role="list">
-        {events.map((event) => (
-          <div key={event.id} className="group" role="listitem">
-            <button
+        {events.map((event, index) => (
+          <motion.div
+            key={event.id}
+            className="group"
+            role="listitem"
+            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            whileInView={{ opacity: 1, y: 0, scale: 1 }}
+            viewport={{ once: false, amount: 0.2, margin: "-60px 0px -60px 0px" }}
+            transition={{ duration: 0.5, delay: index * 0.06, ease: "easeOut" }}
+          >
+            <motion.button
               type="button"
               aria-label={`View details for ${event.name}`}
               onClick={() => handleEventClick(event)}
-              className="relative w-full text-left bg-zinc-900/60 backdrop-blur-sm rounded-xl p-5 md:p-6 border border-zinc-800/60 hover:border-zinc-700/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 transition-all duration-300 hover:bg-zinc-900/80 disabled:opacity-60 overflow-hidden pointer-events-auto touch-manipulation md:hover:shadow-lg md:hover:shadow-blue-500/10 md:active:scale-[0.985] md:hover:scale-[1.015]"
+              className="relative w-full text-left bg-zinc-900/60 backdrop-blur-sm rounded-xl p-5 md:p-6 border border-zinc-800/60 hover:border-zinc-700/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 transition-all duration-300 hover:bg-zinc-900/80 disabled:opacity-60 overflow-hidden pointer-events-auto touch-manipulation md:hover:shadow-lg md:hover:shadow-blue-500/10"
+              whileTap={{ scale: 0.985 }}
             >
               <span className="absolute inset-0" aria-hidden="true" />
               {/* Event Card Header */}
               <div className="flex items-center justify-between mb-4">
-                <div
-                  className={`px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]}`}
-                >
-                  <span className={statusTextColors[event.status]}>
-                    {event.status}
-                  </span>
+                <div className="relative inline-flex items-center">
+                  {/* Pulse for ONGOING */}
+                  {event.status === "ONGOING" && (
+                    <span className="absolute -inset-0.5 rounded-full bg-green-500/20 animate-ping" aria-hidden="true" />
+                  )}
+                  <div
+                    className={`relative px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]} backdrop-blur-sm`}
+                  >
+                    <span className={statusTextColors[event.status]}>
+                      {event.status}
+                    </span>
+                  </div>
                 </div>
                 <div className="text-sm text-zinc-400">
                   {formatDate(event.date)}
@@ -192,8 +208,8 @@ export default function EventCards({ events }: EventCardsProps) {
                   View Details
                 </span>
               </div>
-            </button>
-          </div>
+            </motion.button>
+          </motion.div>
         ))}
       </div>
 

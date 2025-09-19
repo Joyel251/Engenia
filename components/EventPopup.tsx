@@ -1,5 +1,6 @@
 "use client"
 import { motion, AnimatePresence } from "motion/react"
+import { useState } from "react"
 import { X, Calendar, Trophy, Users, MapPin } from "lucide-react"
 import TiltedCard from "./TiltedCard"
 
@@ -43,6 +44,7 @@ const statusTextColors = {
 
 export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu = true }: EventPopupProps) {
   if (!event) return null
+  const [activeTab, setActiveTab] = useState<'details' | 'winners'>('details')
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -78,17 +80,27 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
           onClick={onClose}
         >
           <motion.div
-            initial={{ scale: 0.8, opacity: 0, y: 50 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.8, opacity: 0, y: 50 }}
-            transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="relative w-full max-w-4xl max-h-none sm:max-h-[90vh] overflow-hidden rounded-xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl"
+            initial={{ opacity: 0, y: 60, scale: 1 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 60, scale: 1 }}
+            transition={{ type: "spring", damping: 30, stiffness: 320 }}
+            className="relative w-full max-w-4xl max-h-none sm:max-h-[90vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
+            drag="y"
+            dragElastic={0.2}
+            dragConstraints={{ top: 0, bottom: 0 }}
+            onDragEnd={(e: any, info: any) => {
+              if (info?.offset?.y > 140 || info?.velocity?.y > 800) onClose()
+            }}
           >
+            {/* Grab handle (mobile only) */}
+            <div className="sm:hidden flex items-center justify-center pt-2">
+              <div className="h-1 w-12 rounded-full bg-zinc-600/60" />
+            </div>
             {/* Close Button */}
             <button
               onClick={onClose}
@@ -157,7 +169,31 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                     <p className="text-sm sm:text-base text-zinc-400">{event.type}</p>
                   </div>
 
+                  {/* Mobile Tabs (Details | Winners) when winners exist */}
+                  {event.winners.length > 0 && (
+                    <div className="sm:hidden">
+                      <div className="relative flex bg-zinc-800/40 p-1 rounded-lg border border-zinc-700/40">
+                        {(['details','winners'] as const).map(tab => (
+                          <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`flex-1 text-sm py-2 rounded-md transition-colors ${activeTab === tab ? 'text-white' : 'text-zinc-400'}`}
+                          >
+                            {tab === 'details' ? 'Details' : 'Winners'}
+                          </button>
+                        ))}
+                        <motion.span
+                          layout
+                          className={`absolute top-1 bottom-1 w-1/2 rounded-md bg-zinc-700/40`}
+                          style={{ left: activeTab === 'details' ? '0.25rem' : 'calc(50% + 0.25rem)' }}
+                          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        />
+                      </div>
+                    </div>
+                  )}
+
                   {/* Event Info */}
+                  {(activeTab === 'details' || event.winners.length === 0) && (
                   <div className="grid grid-cols-1 gap-3 sm:gap-4">
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
                       <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 flex-shrink-0" />
@@ -176,8 +212,10 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                       </div>
                     </div>
                   </div>
+                  )}
 
                   {/* Points System */}
+                  {(activeTab === 'details' || event.winners.length === 0) && (
                   <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
                     <div className="flex items-center gap-2 mb-3">
                       <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
@@ -197,8 +235,10 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                       })}
                     </div>
                   </div>
+                  )}
 
                   {/* Guidelines */}
+                  {(activeTab === 'details' || event.winners.length === 0) && (
                   <div className="p-3 sm:p-4 rounded-lg bg-zinc-800/30">
                     <h3 className="font-semibold text-sm sm:text-base text-white mb-3 flex items-center gap-2">
                       <Users className="w-4 h-4 sm:w-5 sm:h-5 text-cyan-400" />
@@ -213,9 +253,10 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                       ))}
                     </div>
                   </div>
+                  )}
 
                   {/* Winners */}
-                  {event.winners.length > 0 && (
+                  {event.winners.length > 0 && (activeTab === 'winners' || typeof window !== 'undefined' && window.innerWidth >= 640) && (
                     <div className="p-3 sm:p-4 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
                       <h3 className="font-semibold text-sm sm:text-base text-white mb-3">🏆 Winners</h3>
                       <div className="space-y-2">

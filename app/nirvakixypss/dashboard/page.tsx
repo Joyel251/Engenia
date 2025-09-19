@@ -467,24 +467,7 @@ export default function AdminDashboard() {
                         )}
                       </button>
                       
-                      <button
-                        onClick={() => handleUpdateSettings({ leaderboardVisible: !settings.leaderboardVisible })}
-                        disabled={isSubmitting}
-                        className={`flex items-center justify-center sm:justify-start space-x-2 px-3 py-2.5 sm:py-2 rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
-                          settings.leaderboardVisible 
-                            ? 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-500/50' 
-                            : 'bg-slate-600 hover:bg-slate-700 text-white border-2 border-slate-500/50'
-                        }`}
-                        title={settings.leaderboardVisible ? 'Hide leaderboard page completely' : 'Show leaderboard page to students'}
-                      >
-                        {settings.leaderboardVisible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                        <span className="font-medium">
-                          {settings.leaderboardVisible ? 'Hide Leaderboard' : 'Show Leaderboard'}
-                        </span>
-                        {isSubmitting && (
-                          <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent ml-1"></div>
-                        )}
-                      </button>
+                      {/* Removed Show/Hide Leaderboard control; lock controls suffice */}
                     </div>
                   </div>
                   
@@ -539,16 +522,7 @@ export default function AdminDashboard() {
                         </span>
                       </span>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        settings.leaderboardVisible ? 'bg-blue-500' : 'bg-slate-500'
-                      }`}></div>
-                      <span className="text-slate-400">
-                        Page: <span className={settings.leaderboardVisible ? 'text-blue-400' : 'text-slate-400'}>
-                          {settings.leaderboardVisible ? 'Visible' : 'Hidden'}
-                        </span>
-                      </span>
-                    </div>
+                    {/* Removed page visibility indicator */}
                     <div className="flex items-center space-x-2">
                       <div className={`w-2 h-2 rounded-full ${
                         settings.showPodium ? 'bg-yellow-500' : 'bg-slate-500'

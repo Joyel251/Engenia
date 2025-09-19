@@ -108,6 +108,12 @@ export default async function EventsPage() {
           Events
         </h1>
 
+        {settings?.lockdown && (
+          <div className="mb-6 p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 text-amber-200">
+            Winners are hidden while the competition is locked.
+          </div>
+        )}
+
         {/* Event Cards Section */}
         <EventCards events={events} />
         {rawEvents.length === 0 && (

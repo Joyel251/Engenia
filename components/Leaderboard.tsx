@@ -103,6 +103,13 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
     return () => clearTimeout(timer)
   }, [])
 
+  // If podium is enabled, prefer Cards view so students see podium by default
+  useEffect(() => {
+    if (showPodium && !locked) {
+      setViewMode('cards')
+    }
+  }, [showPodium, locked])
+
   // Fetch transform & ranking logic (shared for polling + manual refresh)
   const performFetch = useCallback(async () => {
     const res = await fetch('/api/departments', { cache: 'no-store' })
@@ -247,22 +254,23 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
 
   return (
     <div className="w-full max-w-6xl mx-auto">
-      {/* Locked State */}
-      {settings?.lockdown && (
-        <div className="mb-6 p-6 bg-slate-800/50 border-2 border-amber-500/30 rounded-2xl backdrop-blur-sm">
-          <div className="flex items-center justify-center space-x-3">
-            <Lock className="w-6 h-6 text-amber-400" />
-            <h3 className="text-xl font-semibold text-amber-400">Leaderboard Locked</h3>
-          </div>
-          <p className="text-center text-slate-300 mt-2">Rankings are currently hidden during the event</p>
+      {/* Locked State: Show SVG and message, hide all rankings/cards */}
+      {locked ? (
+        <div className="flex flex-col items-center justify-center py-16">
+          {/* Nicer animated lock icon */}
+          <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 160, damping: 14 }} className="relative mb-6">
+            <div className="absolute -inset-4 bg-amber-500/10 blur-2xl rounded-full" />
+            <div className="relative w-24 h-24 rounded-2xl bg-amber-500/10 border border-amber-400/30 flex items-center justify-center shadow-[0_0_40px_rgba(251,191,36,0.15)]">
+              <Lock className="w-12 h-12 text-amber-400" />
+            </div>
+          </motion.div>
+          <h2 className="text-2xl md:text-3xl font-bold text-amber-400 mb-2">Leaderboard is Locked</h2>
+          <p className="text-base md:text-lg text-amber-200/80 text-center max-w-xl mb-4">Rankings are hidden during the event. Please check back later!</p>
         </div>
-      )}
-
-      {/* Show leaderboard only if not locked or if leaderboard is visible */}
-      {(!settings?.lockdown || settings?.leaderboardVisible) && (
+      ) : (
         <>
-      {/* Compact header controls */}
-      <div className="flex flex-wrap items-center justify-end mb-6 gap-3">
+  {/* Compact header controls */}
+  <div className="flex flex-wrap items-center justify-end mb-6 gap-3">
         <div className="flex items-center gap-2 bg-zinc-800/50 rounded-full p-1 pr-2">
           <button
             onClick={() => setViewMode('table')}
@@ -292,6 +300,13 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
           <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''}`} />
         </motion.button>
       </div>
+
+      {/* Hint: Podium enabled but in table view */}
+      {showPodium && viewMode === 'table' && (
+        <div className="w-full mb-4 rounded-md bg-amber-500/10 border border-amber-400/20 text-amber-200 text-xs px-3 py-2">
+          Podium view is enabled. Switch to "Cards" to see the top 3 podium.
+        </div>
+      )}
 
       {viewMode === 'table' && (
         <div className="relative mb-10 overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-b from-zinc-900/80 to-black">

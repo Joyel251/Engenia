@@ -569,7 +569,8 @@ export default function LandingPage() {
                   whileInView={{ 
                     opacity: 1, 
                     y: 0,
-                    scale: 1,
+                    // Merge subtle scale pop previously in whileInView2
+                    scale: [1, 1.02, 1],
                     rotateX: 0
                   }}
                   viewport={{ 
@@ -583,10 +584,6 @@ export default function LandingPage() {
                     type: "spring",
                     stiffness: 80,
                     damping: 15
-                  }}
-                  whileInView2={{
-                    scale: [0.9, 1.02, 1],
-                    transition: { duration: 0.6, delay: idx * 0.1 }
                   }}
                 >
                   <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-zinc-900/60 backdrop-blur-sm shadow-2xl">

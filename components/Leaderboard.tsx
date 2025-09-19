@@ -528,7 +528,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
             <div className="absolute inset-0 pointer-events-none opacity-40 bg-[radial-gradient(circle_at_30%_20%,rgba(253,224,71,0.15),transparent_60%)]" />
             <h2 className="text-2xl font-bold text-amber-400 mb-2">Standings Locked</h2>
             <p className="text-sm md:text-base text-amber-200/80 max-w-xl mx-auto">
-              The final podium will be revealed soon. Keep earning points through events and achievements!
+              The final podium will be revealed soon.
             </p>
           </div>
         </motion.div>

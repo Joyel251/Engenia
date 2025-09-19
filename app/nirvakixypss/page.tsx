@@ -141,15 +141,10 @@ export default function AdminLoginPage() {
           <div className="mt-6 pt-6 border-t border-white/10">
             <div className="flex items-center text-slate-400 text-xs">
               <Lock className="w-3 h-3 mr-1" />
-              <span>Authorized personnel only</span>
+              <span>Admin panel</span>
             </div>
           </div>
         </div>
-
-        {/* Footer */}
-        <p className="text-center text-slate-500 text-xs mt-6">
-          © 2025 Engenia Management System. All rights reserved.
-        </p>
       </div>
     </div>
   )

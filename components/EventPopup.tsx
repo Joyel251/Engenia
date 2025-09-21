@@ -57,20 +57,9 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
     })
   }
 
-  const getEventImage = (eventType: string, status: string) => {
-    const seed = event.id
-    const category = eventType.toLowerCase().includes("tech")
-      ? "tech"
-      : eventType.toLowerCase().includes("dance")
-        ? "people"
-        : eventType.toLowerCase().includes("photo")
-          ? "nature"
-          : eventType.toLowerCase().includes("debate")
-            ? "business"
-            : eventType.toLowerCase().includes("quiz")
-              ? "education"
-              : "abstract"
-    return `https://picsum.photos/seed/${seed}/400/300?category=${category}`
+  // Use public/events/[eventId].webp if exists, else fallback
+  const getEventImage = () => {
+    return `/events/${event.id}.webp`
   }
 
   return (
@@ -123,7 +112,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
               {/* Left Side - Event Image */}
               <div className="lg:w-1/2 p-3 sm:p-6 flex items-center justify-center">
                 <TiltedCard
-                  imageSrc={getEventImage(event.type, event.status)}
+                  imageSrc={getEventImage()}
                   altText={`${event.name} event image`}
                   captionText={event.name}
                   containerHeight="250px"

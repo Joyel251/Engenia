@@ -44,19 +44,9 @@ export default function EventCards({ events }: EventCardsProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
 
+  // Use public/events/[eventId].webp if exists, else fallback
   const getEventImage = (event: Event) => {
-    const category = event.type.toLowerCase().includes("tech")
-      ? "tech"
-      : event.type.toLowerCase().includes("dance")
-        ? "people"
-        : event.type.toLowerCase().includes("photo")
-          ? "nature"
-          : event.type.toLowerCase().includes("debate")
-            ? "business"
-            : event.type.toLowerCase().includes("quiz")
-              ? "education"
-              : "abstract"
-    return `https://picsum.photos/seed/${event.id}/400/300?category=${category}`
+    return `/events/${event.id}.webp`
   }
 
   const handleEventClick = (event: Event) => {

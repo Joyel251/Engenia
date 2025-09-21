@@ -69,7 +69,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1100] flex items-end sm:items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-[1100] flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-sm overflow-y-auto"
           onClick={onClose}
         >
           <motion.div
@@ -77,7 +77,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 60, scale: 1 }}
             transition={{ type: "spring", damping: 30, stiffness: 320 }}
-            className="relative w-full max-w-4xl max-h-none sm:max-h-[90vh] overflow-hidden rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl"
+            className="relative w-full max-w-4xl max-h-screen sm:max-h-[90vh] overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl"
             onClick={(e) => e.stopPropagation()}
             drag="y"
             dragElastic={0.2}

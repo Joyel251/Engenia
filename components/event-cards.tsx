@@ -46,7 +46,7 @@ export default function EventCards({ events }: EventCardsProps) {
 
   // Use public/events/[eventId].webp if exists, else fallback
   const getEventImage = (event: Event) => {
-    return `/events/${event.id}.webp`
+    return `${event.id}.jpg`
   }
 
   const handleEventClick = (event: Event) => {

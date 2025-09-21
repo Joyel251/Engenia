@@ -60,7 +60,6 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
     })
   }
 
-  // Use public/events/[eventId].webp if exists, else fallback
   const getEventImage = () => {
     return `/${event.id}.jpg`
   }
@@ -73,12 +72,10 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
     
     setScrolled(scrollTop > 10)
     
-    // Calculate scroll progress (0 to 1)
     const progress = scrollTop / (scrollHeight - clientHeight)
     setScrollProgress(Math.min(progress, 1))
   }
 
-  // Check if content is scrollable and show indicator initially
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
@@ -87,18 +84,17 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
           const isScrollable = scrollContainer.scrollHeight > scrollContainer.clientHeight
           setShowScrollIndicator(isScrollable)
         }
-      }, 500) // Delay to ensure content is rendered
+      }, 500)
 
       return () => clearTimeout(timer)
     }
   }, [isOpen, activeTab])
 
-  // Hide scroll indicator after user starts scrolling
   useEffect(() => {
     if (scrolled) {
       const timer = setTimeout(() => {
         setShowScrollIndicator(false)
-      }, 2000) // Hide after 2 seconds of scrolling
+      }, 2000)
       
       return () => clearTimeout(timer)
     }
@@ -119,8 +115,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 60, scale: 1 }}
             transition={{ type: "spring", damping: 30, stiffness: 320 }}
-            className="relative w-full max-w-4xl max-h-screen overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl
-              flex flex-col sm:flex-row"
+            className="relative w-full max-w-4xl max-h-screen overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl flex flex-col sm:flex-row"
             onClick={(e) => e.stopPropagation()}
             drag="y"
             dragElastic={0.2}
@@ -134,7 +129,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
               <div className="h-1 w-16 rounded-full bg-zinc-600/60" />
             </div>
 
-            {/* Desktop Close Button - Perfect Circle with Centered X */}
+            {/* Desktop Close Button */}
             <button
               onClick={onClose}
               className={[
@@ -149,7 +144,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
               <X className="w-5 h-5 text-zinc-300" />
             </button>
 
-            {/* Enhanced Mobile Close Button with Blinking Arrow */}
+            {/* Mobile Close Button */}
             <motion.button
               onClick={onClose}
               className="sm:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[1110] bg-gradient-to-r from-zinc-800/95 to-zinc-700/95 hover:from-zinc-700/95 hover:to-zinc-600/95 transition-all rounded-full backdrop-blur-lg border border-zinc-600/30 shadow-lg flex items-center justify-center gap-2"
@@ -219,7 +214,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
               />
             </div>
 
-            {/* Right Side - Event Details (scrollable with onScroll) */}
+            {/* Right Side - Event Details */}
             <div className="w-full sm:w-1/2 relative">
               {/* Desktop Double Arrow Scroll Indicator */}
               <AnimatePresence>
@@ -248,7 +243,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                 )}
               </AnimatePresence>
 
-              {/* Scroll Progress Indicator - Shows during scrolling */}
+              {/* Scroll Progress Indicator */}
               <motion.div
                 className="hidden sm:block absolute right-1 top-4 bottom-4 w-1 bg-zinc-800/30 rounded-full overflow-hidden"
                 initial={{ opacity: 0 }}
@@ -313,70 +308,76 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
 
                 {/* Event Info */}
                 {(activeTab === 'details' || event.winners.length === 0) && (
-                  <div className="grid grid-cols-1 gap-4">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
-                      <Calendar className="w-6 h-6 text-blue-400 flex-shrink-0" />
-                      <div className="min-w-0">
-                        <p className="text-sm text-zinc-400">Date & Time</p>
-                        <p className="text-sm font-medium text-white break-words">
-                          {formatDate(event.date)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
-                      <MapPin className="w-6 h-6 text-green-400 flex-shrink-0" />
-                      <div>
-                        <p className="text-sm text-zinc-400">Division</p>
-                        <p className="text-sm font-medium text-white">{event.division}</p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Points System */}
-                {(activeTab === 'details' || event.winners.length === 0) && (
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
-                    <div className="flex items-center gap-2 mb-4">
-                      <Trophy className="w-6 h-6 text-amber-400" />
-                      <h3 className="font-semibold text-lg text-white">Points System</h3>
-                    </div>
-                    <div className="grid grid-cols-3 gap-4">
-                      {(["1", "2", "3"] as const)
-                        .filter(p => event.points[p] !== undefined)
-                        .map(position => {
-                          const points = event.points[position]
-                          return (
-                            <div
-                              key={position}
-                              className="text-center p-3 rounded bg-zinc-800/30"
-                            >
-                              <div className="text-xl font-bold text-amber-400">{points}</div>
-                              <div className="text-sm text-zinc-400">
-                                {position === "1" ? "1st" : position === "2" ? "2nd" : "3rd"} Place
-                              </div>
-                            </div>
-                          )
-                        })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Guidelines */}
-                {(activeTab === 'details' || event.winners.length === 0) && (
-                  <div className="p-4 rounded-lg bg-zinc-800/30">
-                    <h3 className="font-semibold text-lg text-white mb-4 flex items-center gap-3">
-                      <Users className="w-6 h-6 text-cyan-400" />
-                      Guidelines & Rules
-                    </h3>
-                    <div className="space-y-3 max-h-40 overflow-y-auto custom-scroll pr-2">
-                      {event.guidelines.split("\n").map((guideline, index) => (
-                        <div key={index} className="flex items-start gap-3">
-                          <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
-                          <p className="text-sm text-zinc-300">{guideline}</p>
+                  <>
+                    <div className="grid grid-cols-1 gap-4">
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
+                        <Calendar className="w-6 h-6 text-blue-400 flex-shrink-0" />
+                        <div className="min-w-0">
+                          <p className="text-sm text-zinc-400">Date & Time</p>
+                          <p className="text-sm font-medium text-white break-words">
+                            {formatDate(event.date)}
+                          </p>
                         </div>
-                      ))}
+                      </div>
+                      <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
+                        <MapPin className="w-6 h-6 text-green-400 flex-shrink-0" />
+                        <div>
+                          <p className="text-sm text-zinc-400">Division</p>
+                          <p className="text-sm font-medium text-white">{event.division}</p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+
+                    {/* Points System */}
+                    <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                      <div className="flex items-center gap-2 mb-4">
+                        <Trophy className="w-6 h-6 text-amber-400" />
+                        <h3 className="font-semibold text-lg text-white">Points System</h3>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        {(["1", "2", "3"] as const)
+                          .filter(p => event.points[p] !== undefined)
+                          .map(position => {
+                            const points = event.points[position]
+                            return (
+                              <div key={position} className="text-center p-3 rounded bg-zinc-800/30">
+                                <div className="text-xl font-bold text-amber-400">{points}</div>
+                                <div className="text-sm text-zinc-400">
+                                  {position === "1" ? "1st" : position === "2" ? "2nd" : "3rd"} Place
+                                </div>
+                              </div>
+                            )
+                          })}
+                      </div>
+                    </div>
+
+                    {/* Guidelines with scroll indicator */}
+                    <div className="relative p-4 rounded-lg bg-zinc-800/30">
+                      <h3 className="font-semibold text-lg text-white mb-4 flex items-center gap-3">
+                        <Users className="w-6 h-6 text-cyan-400" />
+                        Guidelines & Rules
+                      </h3>
+                      <div className="relative space-y-3 max-h-40 overflow-y-auto custom-scroll pr-2">
+                        {event.guidelines.split("\n").map((guideline, index) => (
+                          <div key={index} className="flex items-start gap-3">
+                            <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
+                            <p className="text-sm text-zinc-300">{guideline}</p>
+                          </div>
+                        ))}
+                        {/* Bottom fade overlay */}
+                        <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 bg-gradient-to-t from-zinc-800/90 to-transparent rounded-b-lg" />
+                        {/* Animated double down arrow */}
+                        <motion.div
+                          className="absolute bottom-2 right-2"
+                          animate={{ y: [0, 8, 0] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          aria-hidden="true"
+                        >
+                          <ChevronsDown className="w-5 h-5 text-cyan-400/80" />
+                        </motion.div>
+                      </div>
+                    </div>
+                  </>
                 )}
 
                 {/* Winners */}

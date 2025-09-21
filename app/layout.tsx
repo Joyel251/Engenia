@@ -26,7 +26,7 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: "Engenia2k25",
+  title: "Engenia2025",
   description: "Join us for the most vibrant cultural festival of the year",
 //  { icons: {
   //  icon: "/favicon.png",

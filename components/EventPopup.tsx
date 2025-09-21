@@ -1,7 +1,7 @@
 "use client"
 import { motion, AnimatePresence } from "motion/react"
-import { useState } from "react"
-import { X, Calendar, Trophy, Users, MapPin, ChevronDown } from "lucide-react"
+import { useState, useEffect } from "react"
+import { X, Calendar, Trophy, Users, MapPin, ChevronDown, ChevronsDown } from "lucide-react"
 import TiltedCard from "./TiltedCard"
 
 interface Event {
@@ -46,6 +46,8 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
   if (!event) return null
   const [activeTab, setActiveTab] = useState<'details' | 'winners'>('details')
   const [scrolled, setScrolled] = useState(false)
+  const [showScrollIndicator, setShowScrollIndicator] = useState(false)
+  const [scrollProgress, setScrollProgress] = useState(0)
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -64,8 +66,43 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
   }
 
   const onScrollHandler = (e: React.UIEvent<HTMLDivElement>) => {
-    setScrolled(e.currentTarget.scrollTop > 10)
+    const element = e.currentTarget
+    const scrollTop = element.scrollTop
+    const scrollHeight = element.scrollHeight
+    const clientHeight = element.clientHeight
+    
+    setScrolled(scrollTop > 10)
+    
+    // Calculate scroll progress (0 to 1)
+    const progress = scrollTop / (scrollHeight - clientHeight)
+    setScrollProgress(Math.min(progress, 1))
   }
+
+  // Check if content is scrollable and show indicator initially
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        const scrollContainer = document.querySelector('.scroll-container')
+        if (scrollContainer) {
+          const isScrollable = scrollContainer.scrollHeight > scrollContainer.clientHeight
+          setShowScrollIndicator(isScrollable)
+        }
+      }, 500) // Delay to ensure content is rendered
+
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, activeTab])
+
+  // Hide scroll indicator after user starts scrolling
+  useEffect(() => {
+    if (scrolled) {
+      const timer = setTimeout(() => {
+        setShowScrollIndicator(false)
+      }, 2000) // Hide after 2 seconds of scrolling
+      
+      return () => clearTimeout(timer)
+    }
+  }, [scrolled])
 
   return (
     <AnimatePresence>
@@ -112,7 +149,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
               <X className="w-5 h-5 text-zinc-300" />
             </button>
 
-            {/* Enhanced Mobile Close Button - Pill shaped with better UX */}
+            {/* Enhanced Mobile Close Button with Blinking Arrow */}
             <motion.button
               onClick={onClose}
               className="sm:hidden fixed bottom-6 left-1/2 -translate-x-1/2 z-[1110] bg-gradient-to-r from-zinc-800/95 to-zinc-700/95 hover:from-zinc-700/95 hover:to-zinc-600/95 transition-all rounded-full backdrop-blur-lg border border-zinc-600/30 shadow-lg flex items-center justify-center gap-2"
@@ -127,8 +164,16 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
               <motion.div
                 animate={{
                   rotate: scrolled ? 180 : 0,
+                  opacity: !scrolled ? [1, 0.3, 1] : 1,
                 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                transition={{ 
+                  rotate: { type: 'spring', stiffness: 300, damping: 25 },
+                  opacity: !scrolled ? { 
+                    duration: 1.5, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  } : { duration: 0.3 }
+                }}
               >
                 <ChevronDown className={`text-zinc-200 transition-all ${scrolled ? 'w-5 h-5' : 'w-4 h-4'}`} />
               </motion.div>
@@ -175,157 +220,200 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
             </div>
 
             {/* Right Side - Event Details (scrollable with onScroll) */}
-            <div
-              className="w-full sm:w-1/2 p-3 sm:p-6 overflow-y-auto max-h-[70vh] space-y-6 pb-24 sm:pb-6"
-              onScroll={onScrollHandler}
-              tabIndex={0}
-            >
-              {/* Header */}
-              <div>
-                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
-                  <div
-                    className={`px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]} ${statusTextColors[event.status]}`}
+            <div className="w-full sm:w-1/2 relative">
+              {/* Desktop Double Arrow Scroll Indicator */}
+              <AnimatePresence>
+                {showScrollIndicator && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="hidden sm:flex absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex-col items-center"
                   >
-                    {event.status}
-                  </div>
-                  <div className="px-3 py-1 rounded-full text-sm font-medium bg-zinc-800/50 text-zinc-300">
-                    {event.division}
-                  </div>
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-2">{event.name}</h2>
-                <p className="text-base text-zinc-400">{event.type}</p>
-              </div>
+                    <motion.div
+                      animate={{ 
+                        y: [0, 8, 0],
+                        opacity: [0.4, 1, 0.4]
+                      }}
+                      transition={{ 
+                        duration: 2, 
+                        repeat: Infinity, 
+                        ease: "easeInOut" 
+                      }}
+                      className="flex flex-col items-center"
+                    >
+                      <ChevronsDown className="w-6 h-6 text-zinc-400/80" />
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
-              {/* Mobile Tabs (Details | Winners) when winners exist */}
-              {event.winners.length > 0 && (
-                <div className="sm:hidden">
-                  <div className="relative flex bg-zinc-800/40 p-1 rounded-lg border border-zinc-700/40">
-                    {(['details', 'winners'] as const).map(tab => (
-                      <button
-                        key={tab}
-                        onClick={() => setActiveTab(tab)}
-                        className={`flex-1 py-3 text-base font-semibold rounded-md transition-colors ${
-                          activeTab === tab ? 'text-white' : 'text-zinc-400'
-                        }`}
-                        aria-selected={activeTab === tab}
-                        role="tab"
-                      >
-                        {tab === 'details' ? 'Details' : 'Winners'}
-                      </button>
-                    ))}
-                    <motion.span
-                      layout
-                      className="absolute top-1 bottom-1 w-1/2 rounded-md bg-zinc-700/40"
-                      style={{ left: activeTab === 'details' ? '0.25rem' : 'calc(50% + 0.25rem)' }}
-                      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                      aria-hidden="true"
-                    />
-                  </div>
-                </div>
-              )}
+              {/* Scroll Progress Indicator - Shows during scrolling */}
+              <motion.div
+                className="hidden sm:block absolute right-1 top-4 bottom-4 w-1 bg-zinc-800/30 rounded-full overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: scrolled ? 0.6 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <motion.div
+                  className="w-full bg-gradient-to-b from-blue-400 to-purple-400 rounded-full origin-top"
+                  style={{ height: `${scrollProgress * 100}%` }}
+                  transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                />
+              </motion.div>
 
-              {/* Event Info */}
-              {(activeTab === 'details' || event.winners.length === 0) && (
-                <div className="grid grid-cols-1 gap-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
-                    <Calendar className="w-6 h-6 text-blue-400 flex-shrink-0" />
-                    <div className="min-w-0">
-                      <p className="text-sm text-zinc-400">Date & Time</p>
-                      <p className="text-sm font-medium text-white break-words">
-                        {formatDate(event.date)}
-                      </p>
+              <div
+                className="scroll-container p-3 sm:p-6 overflow-y-auto max-h-[70vh] space-y-6 pb-24 sm:pb-6"
+                onScroll={onScrollHandler}
+                tabIndex={0}
+              >
+                {/* Header */}
+                <div>
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-3">
+                    <div
+                      className={`px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]} ${statusTextColors[event.status]}`}
+                    >
+                      {event.status}
+                    </div>
+                    <div className="px-3 py-1 rounded-full text-sm font-medium bg-zinc-800/50 text-zinc-300">
+                      {event.division}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
-                    <MapPin className="w-6 h-6 text-green-400 flex-shrink-0" />
-                    <div>
-                      <p className="text-sm text-zinc-400">Division</p>
-                      <p className="text-sm font-medium text-white">{event.division}</p>
+                  <h2 className="text-2xl font-bold text-white mb-2">{event.name}</h2>
+                  <p className="text-base text-zinc-400">{event.type}</p>
+                </div>
+
+                {/* Mobile Tabs (Details | Winners) when winners exist */}
+                {event.winners.length > 0 && (
+                  <div className="sm:hidden">
+                    <div className="relative flex bg-zinc-800/40 p-1 rounded-lg border border-zinc-700/40">
+                      {(['details', 'winners'] as const).map(tab => (
+                        <button
+                          key={tab}
+                          onClick={() => setActiveTab(tab)}
+                          className={`flex-1 py-3 text-base font-semibold rounded-md transition-colors ${
+                            activeTab === tab ? 'text-white' : 'text-zinc-400'
+                          }`}
+                          aria-selected={activeTab === tab}
+                          role="tab"
+                        >
+                          {tab === 'details' ? 'Details' : 'Winners'}
+                        </button>
+                      ))}
+                      <motion.span
+                        layout
+                        className="absolute top-1 bottom-1 w-1/2 rounded-md bg-zinc-700/40"
+                        style={{ left: activeTab === 'details' ? '0.25rem' : 'calc(50% + 0.25rem)' }}
+                        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                        aria-hidden="true"
+                      />
                     </div>
                   </div>
-                </div>
-              )}
+                )}
 
-              {/* Points System */}
-              {(activeTab === 'details' || event.winners.length === 0) && (
-                <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Trophy className="w-6 h-6 text-amber-400" />
-                    <h3 className="font-semibold text-lg text-white">Points System</h3>
+                {/* Event Info */}
+                {(activeTab === 'details' || event.winners.length === 0) && (
+                  <div className="grid grid-cols-1 gap-4">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
+                      <Calendar className="w-6 h-6 text-blue-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="text-sm text-zinc-400">Date & Time</p>
+                        <p className="text-sm font-medium text-white break-words">
+                          {formatDate(event.date)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
+                      <MapPin className="w-6 h-6 text-green-400 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm text-zinc-400">Division</p>
+                        <p className="text-sm font-medium text-white">{event.division}</p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="grid grid-cols-3 gap-4">
-                    {(["1", "2", "3"] as const)
-                      .filter(p => event.points[p] !== undefined)
-                      .map(position => {
-                        const points = event.points[position]
+                )}
+
+                {/* Points System */}
+                {(activeTab === 'details' || event.winners.length === 0) && (
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20">
+                    <div className="flex items-center gap-2 mb-4">
+                      <Trophy className="w-6 h-6 text-amber-400" />
+                      <h3 className="font-semibold text-lg text-white">Points System</h3>
+                    </div>
+                    <div className="grid grid-cols-3 gap-4">
+                      {(["1", "2", "3"] as const)
+                        .filter(p => event.points[p] !== undefined)
+                        .map(position => {
+                          const points = event.points[position]
+                          return (
+                            <div
+                              key={position}
+                              className="text-center p-3 rounded bg-zinc-800/30"
+                            >
+                              <div className="text-xl font-bold text-amber-400">{points}</div>
+                              <div className="text-sm text-zinc-400">
+                                {position === "1" ? "1st" : position === "2" ? "2nd" : "3rd"} Place
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Guidelines */}
+                {(activeTab === 'details' || event.winners.length === 0) && (
+                  <div className="p-4 rounded-lg bg-zinc-800/30">
+                    <h3 className="font-semibold text-lg text-white mb-4 flex items-center gap-3">
+                      <Users className="w-6 h-6 text-cyan-400" />
+                      Guidelines & Rules
+                    </h3>
+                    <div className="space-y-3 max-h-40 overflow-y-auto custom-scroll pr-2">
+                      {event.guidelines.split("\n").map((guideline, index) => (
+                        <div key={index} className="flex items-start gap-3">
+                          <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
+                          <p className="text-sm text-zinc-300">{guideline}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Winners */}
+                {event.winners.length > 0 && (activeTab === 'winners' || (typeof window !== 'undefined' && window.innerWidth >= 640)) && (
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
+                    <h3 className="font-semibold text-lg text-white mb-4">🏆 Winners</h3>
+                    <div className="space-y-3 max-h-60 overflow-y-auto custom-scroll pr-2">
+                      {event.winners.map(winner => {
+                        const lowerType = event.type.toLowerCase()
+                        const isIndividual = lowerType.includes('individual') || lowerType.includes('solo')
+                        const isTeam = lowerType.includes('team') || lowerType.includes('group')
+                        const primaryName = isIndividual ? winner.studentName : winner.department.name
+                        const secondary = isIndividual && !isTeam ? winner.department.name : undefined
+                        const positionText = winner.position === 1 ? "1st" : winner.position === 2 ? "2nd" : winner.position === 3 ? "3rd" : `#${winner.position}`
                         return (
-                          <div
-                            key={position}
-                            className="text-center p-3 rounded bg-zinc-800/30"
-                          >
-                            <div className="text-xl font-bold text-amber-400">{points}</div>
-                            <div className="text-sm text-zinc-400">
-                              {position === "1" ? "1st" : position === "2" ? "2nd" : "3rd"} Place
+                          <div key={winner.id} className="flex items-center justify-between p-3 rounded bg-zinc-800/30">
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-base text-white truncate">
+                                {primaryName}
+                              </p>
+                              {secondary && (
+                                <p className="text-sm text-zinc-400 truncate">{secondary}</p>
+                              )}
+                            </div>
+                            <div className="text-right flex-shrink-0 ml-3">
+                              <div className="text-sm font-bold text-purple-400">{positionText}</div>
+                              <div className="text-sm text-zinc-400">
+                                {(event.points?.[winner.position.toString()] ?? 0)} pts
+                              </div>
                             </div>
                           </div>
                         )
                       })}
+                    </div>
                   </div>
-                </div>
-              )}
-
-              {/* Guidelines */}
-              {(activeTab === 'details' || event.winners.length === 0) && (
-                <div className="p-4 rounded-lg bg-zinc-800/30">
-                  <h3 className="font-semibold text-lg text-white mb-4 flex items-center gap-3">
-                    <Users className="w-6 h-6 text-cyan-400" />
-                    Guidelines & Rules
-                  </h3>
-                  <div className="space-y-3 max-h-40 overflow-y-auto custom-scroll pr-2">
-                    {event.guidelines.split("\n").map((guideline, index) => (
-                      <div key={index} className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
-                        <p className="text-sm text-zinc-300">{guideline}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Winners */}
-              {event.winners.length > 0 && (activeTab === 'winners' || (typeof window !== 'undefined' && window.innerWidth >= 640)) && (
-                <div className="p-4 rounded-lg bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20">
-                  <h3 className="font-semibold text-lg text-white mb-4">🏆 Winners</h3>
-                  <div className="space-y-3 max-h-60 overflow-y-auto custom-scroll pr-2">
-                    {event.winners.map(winner => {
-                      const lowerType = event.type.toLowerCase()
-                      const isIndividual = lowerType.includes('individual') || lowerType.includes('solo')
-                      const isTeam = lowerType.includes('team') || lowerType.includes('group')
-                      const primaryName = isIndividual ? winner.studentName : winner.department.name
-                      const secondary = isIndividual && !isTeam ? winner.department.name : undefined
-                      const positionText = winner.position === 1 ? "1st" : winner.position === 2 ? "2nd" : winner.position === 3 ? "3rd" : `#${winner.position}`
-                      return (
-                        <div key={winner.id} className="flex items-center justify-between p-3 rounded bg-zinc-800/30">
-                          <div className="min-w-0 flex-1">
-                            <p className="font-medium text-base text-white truncate">
-                              {primaryName}
-                            </p>
-                            {secondary && (
-                              <p className="text-sm text-zinc-400 truncate">{secondary}</p>
-                            )}
-                          </div>
-                          <div className="text-right flex-shrink-0 ml-3">
-                            <div className="text-sm font-bold text-purple-400">{positionText}</div>
-                            <div className="text-sm text-zinc-400">
-                              {(event.points?.[winner.position.toString()] ?? 0)} pts
-                            </div>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </motion.div>
         </motion.div>

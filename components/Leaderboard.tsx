@@ -564,12 +564,8 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                 className={`relative group cursor-pointer overflow-hidden rounded-2xl bg-gradient-to-br ${styles.gradient} p-1 ${styles.glow} ring-1 ${styles.ring} transition-all duration-300`}
                 onClick={() => setSelectedDept(selectedDept === dept.id ? null : dept.id)}
               >
-                {/* Rank Badge */}
-                <div className={`absolute top-3 left-3 z-10 flex items-center justify-center w-10 h-10 rounded-full bg-black/30 backdrop-blur-sm ${styles.icon}`}>
-                  {getRankDisplay(dept.rank)}
-                </div>
 
-                {/* Decorative removed thunder icon area intentionally left blank for cleaner design */}
+                {/* Rank Badge and decorative SVGs removed for cleaner design */}
 
                 <div className="bg-black/40 backdrop-blur-sm rounded-xl p-4 md:p-6 h-full relative overflow-hidden">
                   {/* subtle ambient gradient */}
@@ -579,7 +575,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                     <h3 className="text-lg md:text-xl font-bold text-white leading-tight break-words">
                       {dept.name}
                     </h3>
-                    {/* Achievements removed */}
+                    {/* Achievements and SVGs removed */}
                   </div>
 
                   {/* Points & Rank progress */}
@@ -636,15 +632,9 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                   {/* Expand Indicator */}
                   <div className="relative flex items-center justify-between pt-1">
                     <div className="flex items-center gap-1 text-xs text-black">
-                      <Users className="w-3 h-3" />
+                      {/* SVGs removed */}
                       <span>{selectedDept === dept.id ? 'Hide Details' : 'View Details'}</span>
                     </div>
-                    <motion.div
-                      animate={{ rotate: selectedDept === dept.id ? 90 : 0 }}
-                      transition={{ duration: 0.25 }}
-                    >
-                      <ChevronRight className="w-4 h-4 text-zinc-400" />
-                    </motion.div>
                   </div>
 
                   {/* Expanded Details */}

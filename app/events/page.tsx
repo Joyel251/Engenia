@@ -21,9 +21,8 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
   throw lastErr
 }
 
-// BubbleMenu is a client component; load dynamically to avoid SSR mismatch
-const BubbleMenu = nextDynamic(() => import('@/components/BubbleMenu'), { ssr: false })
-const LightRays = nextDynamic(() => import('@/components/light-rays'), { ssr: false })
+import BubbleMenu from '@/components/BubbleMenu'
+import LightRays from '@/components/light-rays'
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';

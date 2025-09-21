@@ -631,7 +631,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
 
                   {/* Expand Indicator */}
                   <div className="relative flex items-center justify-between pt-1">
-                    <div className="flex items-center gap-1 text-xs text-black">
+                    <div className="flex items-center gap-1 text-xs text-#1a1a8c">
                       {/* SVGs removed */}
                       <span>{selectedDept === dept.id ? 'Hide Details' : 'View Details'}</span>
                     </div>

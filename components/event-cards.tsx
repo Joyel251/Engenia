@@ -44,7 +44,6 @@ export default function EventCards({ events }: EventCardsProps) {
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null)
   const [isPopupOpen, setIsPopupOpen] = useState(false)
 
-  // Use public/events/[eventId].webp if exists, else fallback
   const getEventImage = (event: Event) => {
     return `${event.id}.jpg`
   }
@@ -78,16 +77,18 @@ export default function EventCards({ events }: EventCardsProps) {
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mb-16" role="list">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" role="list">
         {events.map((event, index) => (
           <motion.div
             key={event.id}
             className="group"
             role="listitem"
-            initial={{ opacity: 0, y: 40, scale: 0.98 }}
+            initial={{ opacity: 0, y: 18, scale: 0.99 }}
             whileInView={{ opacity: 1, y: 0, scale: 1 }}
-            viewport={{ once: false, amount: 0.2, margin: "-60px 0px -60px 0px" }}
-            transition={{ duration: 0.5, delay: index * 0.06, ease: "easeOut" }}
+            whileHover={{ scale: 1.03, boxShadow: '0 4px 32px rgba(0,255,255,0.10)' }}
+            whileTap={{ scale: 0.97 }}
+            viewport={{ once: false, amount: 0.25, margin: "-40px 0px -40px 0px" }}
+            transition={{ duration: 0.28, delay: index * 0.03, type: 'spring', stiffness: 260, damping: 18 }}
           >
             <motion.button
               type="button"
@@ -97,16 +98,14 @@ export default function EventCards({ events }: EventCardsProps) {
               whileTap={{ scale: 0.985 }}
             >
               <span className="absolute inset-0" aria-hidden="true" />
+              
               {/* Event Card Header */}
               <div className="flex items-center justify-between mb-4">
                 <div className="relative inline-flex items-center">
-                  {/* Pulse for ONGOING */}
                   {event.status === "ONGOING" && (
                     <span className="absolute -inset-0.5 rounded-full bg-green-500/20 animate-ping" aria-hidden="true" />
                   )}
-                  <div
-                    className={`relative px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]} backdrop-blur-sm`}
-                  >
+                  <div className={`relative px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]} backdrop-blur-sm`}>
                     <span className={statusTextColors[event.status]}>
                       {event.status}
                     </span>
@@ -153,7 +152,7 @@ export default function EventCards({ events }: EventCardsProps) {
                 </h3>
                 <p className="text-zinc-400 text-xs md:text-sm line-clamp-1" title={event.type}>{event.type}</p>
                 
-                {/* Points Preview (only 1st,2nd,3rd) */}
+                {/* Points Preview */}
                 <div className="flex items-center gap-2">
                   <span className="text-xs text-zinc-500">Points:</span>
                   <div className="flex gap-1">
@@ -165,7 +164,7 @@ export default function EventCards({ events }: EventCardsProps) {
                   </div>
                 </div>
 
-                {/* Winners Preview - First 3 places only, sorted by position */}
+                {/* Winners Preview */}
                 {event.winners.filter(w => w.position <= 3).length > 0 && (
                   <div className="pt-2 border-t border-zinc-800">
                     <span className="text-xs text-zinc-500 mb-2 block">Winners:</span>

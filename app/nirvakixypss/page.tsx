@@ -12,11 +12,24 @@ export default function AdminLoginPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [showReset, setShowReset] = useState(false)
+  const [resetData, setResetData] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  })
+  const [resetLoading, setResetLoading] = useState(false)
   const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+
+    // If admin/admin123, show reset form
+    if (formData.username === 'admin' && formData.password === 'admin123') {
+      setShowReset(true)
+      setIsLoading(false)
+      return
+    }
 
     try {
       const response = await fetch('/api/admin/login', {
@@ -40,6 +53,49 @@ export default function AdminLoginPage() {
       toast.error('Network error. Please try again.')
     } finally {
       setIsLoading(false)
+    }
+  }
+
+  const handleResetChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setResetData({
+      ...resetData,
+      [e.target.name]: e.target.value
+    })
+  }
+
+  const handleResetSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!resetData.newPassword || !resetData.confirmPassword) {
+      toast.error('Please fill in all fields')
+      return
+    }
+    if (resetData.newPassword !== resetData.confirmPassword) {
+      toast.error('Passwords do not match')
+      return
+    }
+    setResetLoading(true)
+    try {
+      const response = await fetch('/api/admin/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: 'admin', oldPassword: 'admin123', newPassword: resetData.newPassword })
+      })
+      const data = await response.json()
+      if (response.ok && data.success) {
+        toast.success('Password reset successful! Please login with your new password.')
+        setShowReset(false)
+        setFormData({ username: 'admin', password: '' })
+      } else {
+        if (response.status === 401 && data.error?.toLowerCase().includes('password')) {
+          toast.error('Wrong password')
+        } else {
+          toast.error(data.error || 'Password reset failed')
+        }
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.')
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -70,7 +126,8 @@ export default function AdminLoginPage() {
           </div>
 
           {/* Login Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          {!showReset ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
             {/* Username Field */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-slate-200 block">
@@ -135,7 +192,49 @@ export default function AdminLoginPage() {
                 'Access Admin Panel'
               )}
             </button>
-          </form>
+            </form>
+          ) : (
+            <form onSubmit={handleResetSubmit} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200 block">New Password</label>
+                <input
+                  type="password"
+                  name="newPassword"
+                  value={resetData.newPassword}
+                  onChange={handleResetChange}
+                  required
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Enter new password"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-200 block">Confirm New Password</label>
+                <input
+                  type="password"
+                  name="confirmPassword"
+                  value={resetData.confirmPassword}
+                  onChange={handleResetChange}
+                  required
+                  className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                  placeholder="Confirm new password"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={resetLoading}
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 disabled:from-slate-600 disabled:to-slate-700 text-white font-medium py-3 px-6 rounded-xl transition-all duration-200 transform hover:scale-[1.02] disabled:scale-100 disabled:cursor-not-allowed shadow-lg"
+              >
+                {resetLoading ? (
+                  <div className="flex items-center justify-center">
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2"></div>
+                    Resetting...
+                  </div>
+                ) : (
+                  'Reset Password'
+                )}
+              </button>
+            </form>
+          )}
 
           {/* Security Notice */}
           <div className="mt-6 pt-6 border-t border-white/10">

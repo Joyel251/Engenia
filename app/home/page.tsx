@@ -32,7 +32,7 @@ const menuItems = [
   },
   {
     label: 'photogallery',
-    href: '#',
+    href: '/photogallery',
     ariaLabel: 'Photo Gallery',
     rotation: 8,
     hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' }

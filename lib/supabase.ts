@@ -25,6 +25,7 @@ export const TABLES = {
   ANNOUNCEMENTS: 'Announcement',
   SETTINGS: 'Settings',
   ADMIN: 'Admin',
+  PHOTO_GALLERY: 'PhotoGallery', // Updated to match Prisma and Supabase table name
 } as const
 
 // Helper types based on your Prisma schema
@@ -80,6 +81,13 @@ export interface Admin {
   password: string
 }
 
+// Photo Gallery interface - minimal structure with only 3 fields
+export interface PhotoGallery {
+  id: string;
+  driveurl: string;
+  created_at: string;
+}
+
 // Helper functions for common operations
 export const supabaseHelpers = {
   // Get all departments with their points
@@ -113,6 +121,17 @@ export const supabaseHelpers = {
     
     if (error) throw error
     return data as Announcement[]
+  },
+
+  // Get all photos from gallery
+  async getPhotoGallery() {
+    const { data, error } = await supabase
+      .from(TABLES.PHOTO_GALLERY)
+  .select('id, driveurl, created_at')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data as PhotoGallery[]
   },
 
   // Get winners for an event
@@ -191,6 +210,42 @@ export const supabaseAdminHelpers = {
     
     if (error) throw error
     return data as Announcement
+  },
+
+  // Add photo to gallery
+  async addPhoto(driveurl: string) {
+    const { data, error } = await supabaseAdmin
+      .from(TABLES.PHOTO_GALLERY)
+      .insert({ driveurl: driveurl })
+      .select()
+      .single()
+    
+    if (error) throw error
+    return data as PhotoGallery
+  },
+
+  // Get all photos (admin function)
+  async getAllPhotos() {
+    const { data, error } = await supabaseAdmin
+      .from(TABLES.PHOTO_GALLERY)
+  .select('id, driveurl, created_at')
+      .order('created_at', { ascending: false })
+    
+    if (error) throw error
+    return data as PhotoGallery[]
+  },
+
+  // Delete photo from gallery
+  async deletePhoto(photoId: string) {
+    const { data, error } = await supabaseAdmin
+      .from(TABLES.PHOTO_GALLERY)
+      .delete()
+      .eq('id', photoId)
+      .select('id, driveurl, created_at')
+      .single()
+    
+    if (error) throw error
+    return data as PhotoGallery
   },
 
   // Add winner

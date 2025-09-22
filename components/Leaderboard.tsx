@@ -335,9 +335,9 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                           layout
                           layoutId={dept.id}
                           initial={false}
-                          animate={{ backgroundColor: rankChange !== 0 ? 'rgba(34,197,94,0.10)' : 'rgba(0,0,0,0)' }}
+                          animate={{ backgroundColor: rankChange > 0 ? 'rgba(34,197,94,0.10)' : rankChange < 0 ? 'rgba(239,68,68,0.10)' : 'rgba(0,0,0,0)' }}
                           transition={{ type: 'spring', stiffness: 500, damping: 40, mass: 0.6 }}
-                          className={`group border-t border-zinc-800/60 hover:bg-zinc-800/30 transition-colors ${rankChange < 0 ? 'outline outline-1 outline-emerald-500/40' : rankChange > 0 ? 'outline outline-1 outline-red-500/40' : ''}`}
+                          className={`group border-t border-zinc-800/60 hover:bg-zinc-800/30 transition-colors ${rankChange < 0 ? 'outline outline-1 outline-red-500/40' : rankChange > 0 ? 'outline outline-1 outline-emerald-500/40' : ''}`}
                         >
                           <td className="py-1.5 md:py-2 pl-5 md:pl-6 pr-2 font-semibold text-zinc-200">
                             <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                                   initial={{ scale: 0.8, opacity: 0 }}
                                   animate={{ scale: 1, opacity: 1 }}
                                   exit={{ opacity: 0 }}
-                                  className={`w-2 h-2 rounded-full ${rankChange < 0 ? 'bg-emerald-400' : 'bg-red-400'}`}
+                                  className={`w-2 h-2 rounded-full ${rankChange < 0 ? 'bg-red-400' : 'bg-emerald-400'}`}
                                 />
                               )}
                             </div>
@@ -399,7 +399,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                   layoutId={`mobile-row-${dept.id}`}
                   className={`px-3 py-2.5 flex items-center gap-3 relative overflow-hidden rounded-sm`}
                   initial={false}
-                  animate={{ backgroundColor: rankChange !== 0 ? 'rgba(34,197,94,0.08)' : 'transparent' }}
+                  animate={{ backgroundColor: rankChange > 0 ? 'rgba(34,197,94,0.08)' : rankChange < 0 ? 'rgba(239,68,68,0.08)' : 'transparent' }}
                   transition={{ type: 'spring', stiffness: 450, damping: 38, mass: 0.6 }}
                 >
                   {rankChange !== 0 && (
@@ -408,13 +408,13 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                       animate={{ scale: 1, opacity: 1 }}
                       exit={{ opacity: 0 }}
                       className={`absolute inset-0 pointer-events-none ${rankChange < 0 ? 'animate-pulse' : ''}`}
-                      style={{ background: rankChange < 0 ? 'radial-gradient(circle at 30% 50%, rgba(16,185,129,0.18), transparent 70%)' : 'radial-gradient(circle at 30% 50%, rgba(244,63,94,0.18), transparent 70%)' }}
+                      style={{ background: rankChange < 0 ? 'radial-gradient(circle at 30% 50%, rgba(244,63,94,0.18), transparent 70%)' : 'radial-gradient(circle at 30% 50%, rgba(16,185,129,0.18), transparent 70%)' }}
                     />
                   )}
                   <div className="flex flex-col items-center w-10">
                     <span className="text-sm font-bold text-zinc-200">{dept.rank}</span>
                     {rankChange !== 0 && (
-                      <div className={`w-2 h-2 rounded-full mt-0.5 ${rankChange < 0 ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                      <div className={`w-2 h-2 rounded-full mt-0.5 ${rankChange < 0 ? 'bg-red-400' : 'bg-emerald-400'}`} />
                     )}
                   </div>
                   <div className="flex-1 min-w-0">

@@ -250,7 +250,7 @@ export default function PhotoGalleryPage() {
           lightSpread={1.1}
           rayLength={2.2}
           pulsating={true}
-          fadeDistance={1.1}
+          fadeDistance={1.2}
           saturation={1.0}
           followMouse={true}
           mouseInfluence={0.12}

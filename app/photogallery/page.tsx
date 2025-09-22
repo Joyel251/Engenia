@@ -44,8 +44,9 @@ const menuItems = [
 
 // Custom hook for scroll animations
 const useScrollAnimation = () => {
-  const [visibleElements, setVisibleElements] = useState(new Set());
-  const observer = useRef(null);
+  const [visibleElements, setVisibleElements] = useState<Set<string>>(new Set());
+  // Fix: Change the ref type to hold IntersectionObserver, not DOM element
+  const observer = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
     // Create intersection observer with optimized settings
@@ -54,7 +55,13 @@ const useScrollAnimation = () => {
         entries.forEach((entry) => {
           const elementId = entry.target.getAttribute('data-animate-id');
           if (entry.isIntersecting) {
-            setVisibleElements(prev => new Set([...prev, elementId]));
+            setVisibleElements(prev => {
+              const arr = Array.from(prev);
+              if (elementId && !arr.includes(elementId)) {
+                arr.push(elementId);
+              }
+              return new Set(arr);
+            });
           }
         });
       },
@@ -71,7 +78,8 @@ const useScrollAnimation = () => {
     };
   }, []);
 
-  const observeElement = (element) => {
+  // Fix: The observeElement function should accept HTMLElement
+  const observeElement = (element: HTMLElement | null) => {
     if (observer.current && element) {
       observer.current.observe(element);
     }
@@ -113,7 +121,7 @@ const getMultipleDriveUrls = (driveurl: string) => {
   return [];
 };
 
-const formatDate = (timestamp) => {
+const formatDate = (timestamp: string) => {
   const date = new Date(timestamp);
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -123,15 +131,15 @@ const formatDate = (timestamp) => {
 };
 
 export default function PhotoGalleryPage() {
-  const [photos, setPhotos] = useState([]);
+  const [photos, setPhotos] = useState<Array<{ id: string; driveurl: string; created_at: string }>>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [imageErrors, setImageErrors] = useState({});
-  const [urlAttempts, setUrlAttempts] = useState({});
+  const [error, setError] = useState<string | null>(null);
+  const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+  const [urlAttempts, setUrlAttempts] = useState<Record<string, number>>({});
   
   const { visibleElements, observeElement } = useScrollAnimation();
-  const titleRef = useRef(null);
-  const statsRef = useRef(null);
+  const titleRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -181,7 +189,7 @@ export default function PhotoGalleryPage() {
     }
   }, [loading, observeElement]);
 
-  const handleImageError = (photoId, driveurl) => {
+  const handleImageError = (photoId: string, driveurl: string) => {
     console.error('Image failed to load for photo:', photoId);
     
     const availableUrls = getMultipleDriveUrls(driveurl);
@@ -202,7 +210,7 @@ export default function PhotoGalleryPage() {
     }
   };
 
-  const handleImageLoad = (photoId) => {
+  const handleImageLoad = (photoId: string) => {
     console.log('Image loaded successfully for photo:', photoId);
     setImageErrors(prev => ({
       ...prev,
@@ -314,7 +322,7 @@ export default function PhotoGalleryPage() {
         {!loading && !error && photos.length > 0 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-              {photos.map((photo: { id: string; driveurl: string; created_at: string }, index: number) => {
+              {photos.map((photo, index) => {
                 if (!photo || !photo.driveurl) {
                   return null;
                 }

@@ -169,12 +169,48 @@ export default function AdminDashboard() {
     setActiveTab('winners')
   }
 
+  // Helper function to check if a department can be added for a specific position
+  const canDepartmentBeAdded = (deptId: string, position: number, division: string) => {
+    if (!selectedEvent) return false
+
+    if (division === 'OFFSTAGE') {
+      // OFFSTAGE: Check if position is already taken by any department
+      return !winners.some(w => w.position === position)
+    } else {
+      // ONSTAGE: Check if this department already has any winner in this event
+      return !winners.some(w => w.department.id === deptId)
+    }
+  }
+
+  // Helper function to get available departments for current form state
+  const getAvailableDepartments = () => {
+    if (!selectedEvent) return departments
+
+    // Always return all departments - restrictions will be handled in the option rendering
+    return departments
+  }
+
   const handleAddWinner = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!selectedEvent || !winnerForm.deptId) {
       toast.error('Please select an event and department')
       return
+    }
+
+    // Validate based on division rules
+    if (selectedEvent.division === 'OFFSTAGE') {
+      // OFFSTAGE: Check if position is already taken
+      if (winners.some(w => w.position === winnerForm.position)) {
+        toast.error('This position is already taken!')
+        return
+      }
+    } else {
+      // ONSTAGE: Check if department already has a winner
+      if (winners.some(w => w.department.id === winnerForm.deptId)) {
+        toast.error('This department already has a winner in this event!')
+        return
+      }
     }
 
     setIsWinnerLoading(true)
@@ -750,7 +786,9 @@ export default function AdminDashboard() {
                           className="w-full px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
                           {[1, 2, 3].map(pos => {
-                            const isPositionTaken = winners.some(w => w.position === pos)
+                            const isPositionTaken = selectedEvent.division === 'OFFSTAGE' 
+                              ? winners.some(w => w.position === pos)
+                              : false // For ONSTAGE, position availability is based on department, not position
                             return (
                               <option key={pos} value={pos} disabled={isPositionTaken}>
                                 {pos === 1 ? '1st Place' : pos === 2 ? '2nd Place' : '3rd Place'}
@@ -769,11 +807,18 @@ export default function AdminDashboard() {
                           required
                         >
                           <option value="">Select Department</option>
-                          {departments.map((dept) => {
-                            const isDeptTaken = winners.some(w => w.department.id === dept.id)
+                          {getAvailableDepartments().map((dept) => {
+                            // For OFFSTAGE: Check if department already won this specific position
+                            // For ONSTAGE: Check if department already has any winner
+                            const isDeptRestricted = selectedEvent.division === 'OFFSTAGE'
+                              ? winners.some(w => w.department.id === dept.id && w.position === winnerForm.position)
+                              : winners.some(w => w.department.id === dept.id)
+                            
                             return (
-                              <option key={dept.id} value={dept.id} disabled={isDeptTaken}>
-                                {dept.name} {isDeptTaken ? '(Already has winner)' : ''}
+                              <option key={dept.id} value={dept.id} disabled={isDeptRestricted}>
+                                {dept.name} {isDeptRestricted ? 
+                                  (selectedEvent.division === 'OFFSTAGE' ? '(Already won this position)' : '(Already has winner)') 
+                                  : ''}
                               </option>
                             )
                           })}

@@ -33,43 +33,7 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'eventId, deptId, and position are required' }), { status: 400 });
     }
 
-    // Check if position already exists for this event
-    const { data: existingPositionWinner, error: positionCheckError } = await supabaseAdmin
-      .from(TABLES.WINNERS)
-      .select('id')
-      .eq('eventId', eventId)
-      .eq('position', position)
-      .single();
-
-    if (positionCheckError && positionCheckError.code !== 'PGRST116') {
-      throw positionCheckError;
-    }
-
-    if (existingPositionWinner) {
-      return new Response(JSON.stringify({ 
-        error: `Position ${position} already has a winner for this event` 
-      }), { status: 400 });
-    }
-
-    // Check if department already has a winner for this event
-    const { data: existingDeptWinner, error: deptCheckError } = await supabaseAdmin
-      .from(TABLES.WINNERS)
-      .select('id')
-      .eq('eventId', eventId)
-      .eq('deptId', deptId)
-      .single();
-
-    if (deptCheckError && deptCheckError.code !== 'PGRST116') {
-      throw deptCheckError;
-    }
-
-    if (existingDeptWinner) {
-      return new Response(JSON.stringify({ 
-        error: 'This department already has a winner for this event' 
-      }), { status: 400 });
-    }
-
-    // 1️⃣ Fetch event to get points mapping
+    // 1️⃣ First, fetch event to get division info
     const { data: event, error: eventError } = await supabaseAdmin
       .from(TABLES.EVENTS)
       .select('*')
@@ -82,10 +46,86 @@ export async function POST(req) {
       return new Response(JSON.stringify({ error: 'Event not found' }), { status: 404 });
     }
 
-    // 2️⃣ Get points for the winner based on position
+    // 2️⃣ Division-based validation
+    if (event.division === 'OFFSTAGE') {
+      // OFFSTAGE: Check if this specific position is already taken by any department
+      const { data: existingPositionWinner, error: positionCheckError } = await supabaseAdmin
+        .from(TABLES.WINNERS)
+        .select('id')
+        .eq('eventId', eventId)
+        .eq('position', position)
+        .single();
+
+      if (positionCheckError && positionCheckError.code !== 'PGRST116') {
+        throw positionCheckError;
+      }
+
+      if (existingPositionWinner) {
+        return new Response(JSON.stringify({ 
+          error: `Position ${position} already has a winner for this event` 
+        }), { status: 400 });
+      }
+
+      // OFFSTAGE: Also check if this department already won this specific position
+      const { data: existingDeptPositionWinner, error: deptPositionCheckError } = await supabaseAdmin
+        .from(TABLES.WINNERS)
+        .select('id')
+        .eq('eventId', eventId)
+        .eq('deptId', deptId)
+        .eq('position', position)
+        .single();
+
+      if (deptPositionCheckError && deptPositionCheckError.code !== 'PGRST116') {
+        throw deptPositionCheckError;
+      }
+
+      if (existingDeptPositionWinner) {
+        return new Response(JSON.stringify({ 
+          error: 'This department already won this position' 
+        }), { status: 400 });
+      }
+    } else {
+      // ONSTAGE: Check if position already exists for this event
+      const { data: existingPositionWinner, error: positionCheckError } = await supabaseAdmin
+        .from(TABLES.WINNERS)
+        .select('id')
+        .eq('eventId', eventId)
+        .eq('position', position)
+        .single();
+
+      if (positionCheckError && positionCheckError.code !== 'PGRST116') {
+        throw positionCheckError;
+      }
+
+      if (existingPositionWinner) {
+        return new Response(JSON.stringify({ 
+          error: `Position ${position} already has a winner for this event` 
+        }), { status: 400 });
+      }
+
+      // ONSTAGE: Check if department already has ANY winner for this event
+      const { data: existingDeptWinner, error: deptCheckError } = await supabaseAdmin
+        .from(TABLES.WINNERS)
+        .select('id')
+        .eq('eventId', eventId)
+        .eq('deptId', deptId)
+        .single();
+
+      if (deptCheckError && deptCheckError.code !== 'PGRST116') {
+        throw deptCheckError;
+      }
+
+      if (existingDeptWinner) {
+        return new Response(JSON.stringify({ 
+          error: 'This department already has a winner for this event' 
+        }), { status: 400 });
+      }
+    }
+
+    // 3️⃣ Get points for the winner based on position
     let pointsForPosition = event.points[position] || 0;
 
-    // 3️⃣ Create winner with explicit UUID
+    // 4️⃣ Create winner with explicit UUID
     const winnerId = randomUUID();
     const { data: newWinner, error: winnerError } = await supabaseAdmin
       .from(TABLES.WINNERS)
@@ -105,7 +145,7 @@ export async function POST(req) {
 
     if (winnerError) throw winnerError;
 
-    // 4️⃣ Update department points
+    // 5️⃣ Update department points
     const { data: dept, error: deptError } = await supabaseAdmin
       .from(TABLES.DEPARTMENTS)
       .select('points')
@@ -123,7 +163,7 @@ export async function POST(req) {
 
     if (updateError) throw updateError;
 
-    // 5️⃣ Check if event now has all 3 winners (1st, 2nd, 3rd) and mark as completed
+    // 6️⃣ Check if event now has all 3 winners (1st, 2nd, 3rd) and mark as completed
     const { count: totalWinners, error: countError } = await supabaseAdmin
       .from(TABLES.WINNERS)
       .select('*', { count: 'exact', head: true })

@@ -27,7 +27,7 @@ export async function POST(req) {
     // 1b) Reset all events to ONGOING
     const { error: evErr } = await supabaseAdmin
       .from(TABLES.EVENTS)
-      .update({ status: 'ONGOING' })
+      .update({ status: 'UPCOMING' })
       .neq('id', '')
     if (evErr) throw evErr
 

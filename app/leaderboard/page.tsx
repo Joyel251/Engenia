@@ -152,7 +152,23 @@ export default async function LeaderboardPage() {
         </div>
         
         {/* Floating navigation menu - Hide logo on leaderboard page */}
-        <BubbleMenu hideLogo useFixedPosition />
+        <BubbleMenu
+          logo="/logo.jpg"
+          items={[
+            { label: 'home', href: '/', ariaLabel: 'Home', rotation: -8, hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' } },
+            { label: 'events', href: '/events', ariaLabel: 'Events', rotation: 8, hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' } },
+            { label: 'leaderboard', href: '/leaderboard', ariaLabel: 'Leaderboard', rotation: 8, hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' } },
+            { label: 'photogallery', href: '/photogallery', ariaLabel: 'Photo Gallery', rotation: 8, hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' } },
+            { label: 'updates', href: '/announcements', ariaLabel: 'Updates & Announcements', rotation: -8, hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' } }
+          ]}
+          menuAriaLabel="Toggle navigation"
+          menuBg="rgba(255, 255, 255, 0.95)"
+          menuContentColor="#111111"
+          useFixedPosition={true}
+          animationEase="back.out(1.5)"
+          animationDuration={0.6}
+          staggerDelay={0.1}
+        />
         
         <div className="relative z-10 max-w-7xl mx-auto">
           <AnimatedPageHeader>

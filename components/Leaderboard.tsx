@@ -151,12 +151,17 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
         return sum + pts
       }, 0)
     })
-    transformed.sort((a,b) => {
-      if (b.points !== a.points) return b.points - a.points
-      if (b.firstPlaces !== a.firstPlaces) return b.firstPlaces - a.firstPlaces
-      if (b.secondPlaces !== a.secondPlaces) return b.secondPlaces - a.secondPlaces
-      return b.totalEvents - a.totalEvents
-    })
+    const allZeroPoints = transformed.every(d => d.points === 0)
+    if (allZeroPoints) {
+      transformed.sort((a,b) => a.name.localeCompare(b.name))
+    } else {
+      transformed.sort((a,b) => {
+        if (b.points !== a.points) return b.points - a.points
+        if (b.firstPlaces !== a.firstPlaces) return b.firstPlaces - a.firstPlaces
+        if (b.secondPlaces !== a.secondPlaces) return b.secondPlaces - a.secondPlaces
+        return b.totalEvents - a.totalEvents
+      })
+    }
     transformed.forEach((d,i) => d.rank = i+1)
     const prevRankMap = { ...prevRanksRef.current }
     const prevPointsMap = { ...prevPointsRef.current }

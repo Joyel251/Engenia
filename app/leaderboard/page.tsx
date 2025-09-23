@@ -87,25 +87,21 @@ export default async function LeaderboardPage() {
       return data;
     }) as any[]
 
-  // Calculate detailed rankings and statistics (points derived from winners' event points)
+  // Calculate detailed rankings and statistics (use stored dept.points for leaderboard)
   const departmentRankings: DepartmentRanking[] = (departments as any[]).map((dept: any) => {
       const winners = dept.winners || [];
       const firstPlaces = winners.filter((w: any) => w.position === 1).length;
       const secondPlaces = winners.filter((w: any) => w.position === 2).length;
       const thirdPlaces = winners.filter((w: any) => w.position === 3).length;
       
-      // Calculate points from event participation
-      const calculatedPoints = winners.reduce((total: number, winner: any) => {
-        const eventPoints = winner.event?.points || {};
-        const positionKey = winner.position.toString();
-        return total + (eventPoints[positionKey] || 0);
-      }, 0);
+      // Points shown on leaderboard come from stored department points (includes bonuses)
+      const storedPoints = Number(dept.points || 0);
 
       return {
         id: dept.id,
         name: dept.name,
-        // Use calculatedPoints as canonical points value
-        points: calculatedPoints,
+        // Use stored department points as canonical points value
+        points: storedPoints,
         achievements: dept.achievements || [],
         winners: winners.map((w: any) => ({
           id: w.id,
@@ -123,7 +119,11 @@ export default async function LeaderboardPage() {
         firstPlaces,
         secondPlaces,
         thirdPlaces,
-        calculatedPoints,
+        calculatedPoints: winners.reduce((total: number, winner: any) => {
+          const eventPoints = winner.event?.points || {};
+          const positionKey = winner.position.toString();
+          return total + (eventPoints[positionKey] || 0);
+        }, 0),
         rank: 0 // Will be set after sorting
       };
     });

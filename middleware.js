@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { verifyTokenEdge } from "./lib/edge-auth";
 
 export const config = {
-  matcher: ["/api/winners/:path*", "/api/announcements/:path*", "/api/admin/reset"],
+  matcher: ["/api/winners/:path*", "/api/announcements/:path*", "/api/admin/reset", "/api/departments/bonus"],
 };
 
 export async function middleware(req) {

@@ -82,6 +82,8 @@ export default function AdminDashboard() {
   const [isWinnerLoading, setIsWinnerLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('events')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [bonusSubmitting, setBonusSubmitting] = useState(false)
+  const [bonusForm, setBonusForm] = useState({ deptId: '', points: 0, reason: '' })
   
   // Winner form state
   const [winnerForm, setWinnerForm] = useState({
@@ -394,6 +396,42 @@ export default function AdminDashboard() {
       toast.error('Network error during reset')
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleAwardBonus = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!bonusForm.deptId || !Number.isFinite(Number(bonusForm.points)) || Number(bonusForm.points) === 0 || !bonusForm.reason.trim()) {
+      toast.error('Select department, enter non-zero points and a reason')
+      return
+    }
+    setBonusSubmitting(true)
+    try {
+      const token = localStorage.getItem('admin_token')
+      const res = await fetch('/api/departments/bonus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          deptId: bonusForm.deptId,
+          points: Number(bonusForm.points),
+          reason: bonusForm.reason.trim()
+        })
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) {
+        toast.error(data.error || 'Failed to award bonus')
+      } else {
+        toast.success('Bonus points awarded')
+        setBonusForm({ deptId: '', points: 0, reason: '' })
+        await fetchInitialData()
+      }
+    } catch (e) {
+      toast.error('Network error')
+    } finally {
+      setBonusSubmitting(false)
     }
   }
 
@@ -715,6 +753,19 @@ export default function AdminDashboard() {
                     </span>
                   </button>
                 )}
+                {!selectedEvent && (
+                  <button
+                    onClick={() => setActiveTab('bonus')}
+                    className={`flex items-center px-4 sm:px-6 py-3 sm:py-4 text-xs sm:text-sm font-medium transition-colors whitespace-nowrap ${
+                      activeTab === 'bonus'
+                        ? 'text-blue-400 border-b-2 border-blue-400'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <Trophy className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
+                    Bonus Points
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1021,6 +1072,77 @@ export default function AdminDashboard() {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Bonus Tab */}
+            {!selectedEvent && activeTab === 'bonus' && (
+              <div className="bg-slate-800 rounded-xl border border-slate-700 p-4 sm:p-6">
+                <div className="flex items-center justify-between mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl font-semibold text-white flex items-center">
+                    <Trophy className="w-5 sm:w-6 h-5 sm:h-6 mr-2" />
+                    Award Bonus Points
+                  </h2>
+                </div>
+
+                <form onSubmit={handleAwardBonus} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Department</label>
+                    <select
+                      value={bonusForm.deptId}
+                      onChange={(e) => setBonusForm({ ...bonusForm, deptId: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    >
+                      <option value="">Select Department</option>
+                      {departments.map((d) => (
+                        <option key={d.id} value={d.id}>{d.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Points (+/-)</label>
+                    <input
+                      type="number"
+                      value={bonusForm.points}
+                      onChange={(e) => setBonusForm({ ...bonusForm, points: Number(e.target.value) })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="e.g. 5 or -3"
+                      step="1"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2 lg:col-span-2">
+                    <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">Reason</label>
+                    <input
+                      type="text"
+                      value={bonusForm.reason}
+                      onChange={(e) => setBonusForm({ ...bonusForm, reason: e.target.value })}
+                      className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white placeholder-slate-400 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Why are these points awarded?"
+                      required
+                    />
+                  </div>
+                  <div className="sm:col-span-2 lg:col-span-1 flex items-end">
+                    <button
+                      type="submit"
+                      disabled={bonusSubmitting}
+                      className="w-full px-3 sm:px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg transition-colors flex items-center justify-center text-sm"
+                    >
+                      {bonusSubmitting ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Save className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" />
+                          Award Bonus
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
           </div>

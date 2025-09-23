@@ -73,16 +73,8 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
   const [animateCards, setAnimateCards] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
   
-  // Recompute initial points purely from winners' event points so all totals are consistent
-  const initialComputed = departments.map(d => {
-    const recomputed = d.winners.reduce((sum, w) => {
-      const pts = (w.event?.points || {})[w.position.toString()] || 0
-      return sum + pts
-    }, 0)
-    return { ...d, points: recomputed }
-  })
-  
-  const [data, setData] = useState<DepartmentRanking[]>(initialComputed)
+  // Use stored department points (includes bonuses)
+  const [data, setData] = useState<DepartmentRanking[]>(departments)
   const prevRanksRef = useRef<Record<string, number>>({})
   const prevPointsRef = useRef<Record<string, number>>({})
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null)
@@ -144,13 +136,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
         rank: 0
       }
     })
-    // Replace points with computed points from winners for consistency
-    transformed.forEach(d => {
-      d.points = d.winners.reduce((sum, w) => {
-        const pts = (w.event?.points || {})[w.position.toString()] || 0
-        return sum + pts
-      }, 0)
-    })
+    // Keep points from backend (stored department points) so bonuses are reflected
     const allZeroPoints = transformed.every(d => d.points === 0)
     if (allZeroPoints) {
       transformed.sort((a,b) => a.name.localeCompare(b.name))
@@ -169,11 +155,7 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
         const newPointsMap: Record<string, number> = {}
         transformed.forEach(d => { 
           newRankMap[d.id] = d.rank; 
-          const cp = d.winners.reduce((sum, w) => {
-            const pts = (w.event?.points || {})[w.position.toString()] || 0
-            return sum + pts
-          }, 0)
-          newPointsMap[d.id] = cp
+          newPointsMap[d.id] = d.points;
         })
     prevRanksRef.current = newRankMap
     prevPointsRef.current = newPointsMap

@@ -3,6 +3,7 @@ import BlurText from "@/components/blur-text"
 import ShinyText from "@/components/shiny-text"
 import BubbleMenu from "@/components/BubbleMenu"
 import LocomotiveScrollProvider from "@/components/locomotive-scroll-provider"
+import nextDynamic from 'next/dynamic'
 import { useState, useEffect, useRef } from "react"
 import { motion, useReducedMotion } from "framer-motion"
 import { Users } from "lucide-react"
@@ -45,6 +46,8 @@ const menuItems = [
     hoverStyles: { bgColor: '#8b5cf6', textColor: '#ffffff' }
   }
 ]
+
+const Beams = nextDynamic(() => import('@/components/Beams'), { ssr: false })
 
 export default function LandingPage() {
   const [showShinyText, setShowShinyText] = useState(false)
@@ -91,6 +94,11 @@ export default function LandingPage() {
 
   return (
     <LocomotiveScrollProvider>
+      {/* Fullscreen beams background (GPU-accelerated, fixed, non-interactive) */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#ffffff" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />
+      </div>
+
       {/* BubbleMenu Navigation */}
       <BubbleMenu
         logo="/logo.jpg"
@@ -104,7 +112,7 @@ export default function LandingPage() {
         staggerDelay={0.1} 
       />
       
-      <div className="relative bg-black text-white">
+      <div className="relative text-white">
         {/* Foreground content wrapper to ensure above background */}
         <div className="relative z-10">
   {/* Hero Section */}
@@ -581,9 +589,7 @@ export default function LandingPage() {
                   transition={{ 
                     duration: 0.8, 
                     delay: idx * 0.15,
-                    type: "spring",
-                    stiffness: 80,
-                    damping: 15
+                    ease: "easeInOut"
                   }}
                 >
                   <div className="relative overflow-hidden rounded-3xl border border-white/20 bg-zinc-900/60 backdrop-blur-sm shadow-2xl">

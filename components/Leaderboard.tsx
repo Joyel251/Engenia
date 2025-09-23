@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import { motion, AnimatePresence, LayoutGroup } from "motion/react"
 import { Trophy, Medal, Award, Users, Star, ChevronRight, RefreshCw, Table2, Grid, Lock } from "lucide-react"
+import { Confetti } from "@/components/ui/confetti"
+import type { ConfettiRef } from "@/components/ui/confetti"
 
 interface Settings {
   leaderboardVisible: boolean
@@ -72,6 +74,9 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [animateCards, setAnimateCards] = useState(false)
   const [viewMode, setViewMode] = useState<'table' | 'cards'>('table')
+  const [showConfetti, setShowConfetti] = useState(false)
+  const confettiRef = useRef<ConfettiRef>(null)
+  const hasCelebratedRef = useRef(false)
   
   // Use stored department points (includes bonuses)
   const [data, setData] = useState<DepartmentRanking[]>(departments)
@@ -101,6 +106,76 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
       setViewMode('cards')
     }
   }, [showPodium, locked])
+
+  // Trigger confetti only when student-facing podium is visible
+  useEffect(() => {
+    const shouldCelebrate = showPodium && !locked && viewMode === 'cards' && data.length >= 3
+    setShowConfetti(shouldCelebrate)
+    if (!shouldCelebrate) {
+      hasCelebratedRef.current = false
+    }
+  }, [showPodium, locked, viewMode, data])
+
+  // When confetti becomes active, run fireworks + side cannons sequence once
+  useEffect(() => {
+    if (!showConfetti || hasCelebratedRef.current === true) return
+    if (!confettiRef.current?.fire) return
+
+    hasCelebratedRef.current = true
+
+    // Fireworks sequence (5s, mirrored bursts)
+    const fwDuration = 5000
+    const fwAnimationEnd = Date.now() + fwDuration
+    const fwDefaults = { startVelocity: 35, spread: 360, ticks: 70 }
+
+    const fwInterval = window.setInterval(() => {
+      const timeLeft = fwAnimationEnd - Date.now()
+      if (timeLeft <= 0) {
+        clearInterval(fwInterval)
+        return
+      }
+      const particleCount = Math.max(16, Math.floor(60 * (timeLeft / fwDuration)))
+      confettiRef.current?.fire({
+        ...fwDefaults,
+        particleCount,
+        origin: { x: 0.25 + Math.random() * 0.1, y: Math.random() * 0.2 + 0.1 },
+      })
+      confettiRef.current?.fire({
+        ...fwDefaults,
+        particleCount,
+        origin: { x: 0.75 - Math.random() * 0.1, y: Math.random() * 0.2 + 0.1 },
+      })
+    }, 250)
+
+    // Side cannons (3s continuous small bursts left/right)
+    const scEnd = Date.now() + 3000
+    const colors = ["#a786ff", "#fd8bbc", "#eca184", "#f8deb1"]
+    const sideFrame = () => {
+      if (Date.now() > scEnd) return
+      confettiRef.current?.fire({
+        particleCount: 3,
+        angle: 60,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 0.0, y: 0.5 },
+        colors,
+      })
+      confettiRef.current?.fire({
+        particleCount: 3,
+        angle: 120,
+        spread: 55,
+        startVelocity: 60,
+        origin: { x: 1.0, y: 0.5 },
+        colors,
+      })
+      requestAnimationFrame(sideFrame)
+    }
+    requestAnimationFrame(sideFrame)
+
+    return () => {
+      clearInterval(fwInterval)
+    }
+  }, [showConfetti])
 
   // Fetch transform & ranking logic (shared for polling + manual refresh)
   const performFetch = useCallback(async () => {
@@ -241,6 +316,18 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
 
   return (
     <div className="w-full max-w-6xl mx-auto">
+      {/* Confetti overlay: student-facing podium celebration only */}
+      {showConfetti && (
+<Confetti
+          ref={confettiRef}
+          className="pointer-events-none fixed inset-0 w-screen h-screen z-40"
+          globalOptions={{ resize: true, useWorker: true }}
+          options={{}} 
+          manualstart
+          portalToBody
+        />
+      )}
+
       {/* Locked State: Show SVG and message, hide all rankings/cards */}
       {locked ? (
         <div className="flex flex-col items-center justify-center py-16">

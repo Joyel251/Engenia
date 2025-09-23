@@ -5,6 +5,8 @@ import BlurText from "@/components/blur-text";
 import ShinyText from "@/components/shiny-text";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { motion } from "motion/react";
 
 export default function SplashScreen() {
   const [showShinyText, setShowShinyText] = useState(false);
@@ -117,26 +119,24 @@ export default function SplashScreen() {
         {/* Centered title */}
         <div className="h-full flex items-center justify-center px-4">
           <div className="text-center">
-            {!showShinyText ? (
-              <BlurText
-                text="ENGENIA 2025"
-                delay={150}
-                animateBy="letters"
-                direction="top"
-                onAnimationComplete={handleAnimationComplete}
-                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-heading font-black text-white tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"
-                stepDuration={0.4}
-                easing={(t: number) => 1 - Math.pow(1 - t, 3)}
-                threshold={0.1}
-              />
-            ) : (
-              <ShinyText
-                text="ENGENIA 2025"
-                disabled={false}
-                speed={3}
-                className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl xl:text-8xl 2xl:text-9xl font-heading font-black tracking-[0.1em] drop-shadow-2xl [text-shadow:0_0_30px_rgba(255,255,255,0.5)] leading-[0.9] select-none"
-              />
-            )}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 10, filter: 'blur(6px)' }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+              onAnimationComplete={handleAnimationComplete}
+              className="mx-auto"
+            >
+              <div className="relative mx-auto w-[220px] sm:w-[320px] md:w-[420px] lg:w-[560px] aspect-[3/1]">
+                <Image
+                  src="/engenia.png"
+                  alt="Engenia"
+                  fill
+                  sizes="(max-width: 640px) 220px, (max-width: 768px) 320px, (max-width: 1024px) 420px, 560px"
+                  priority
+                  className="object-contain"
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
 

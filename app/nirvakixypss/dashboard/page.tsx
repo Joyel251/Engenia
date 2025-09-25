@@ -691,36 +691,42 @@ export default function AdminDashboard() {
                 <div className="block sm:hidden bg-slate-700/20 rounded-lg p-3 border border-slate-600/30">
                   <h3 className="text-sm font-medium text-slate-300 mb-2">Current Status</h3>
                   <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        launchStatus ? 'bg-green-500' : 'bg-red-500'
-                      }`}></div>
-                      <span className="text-slate-400">
-                        Website: <span className={launchStatus ? 'text-green-400' : 'text-red-400'}>
-                          {launchStatus ? 'Launched' : 'Locked'}
+                    {launchStatus !== null && (
+                      <div className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                          launchStatus ? 'bg-green-500' : 'bg-red-500'
+                        }`}></div>
+                        <span className="text-slate-400">
+                          Website: <span className={launchStatus ? 'text-green-400' : 'text-red-400'}>
+                            {launchStatus ? 'Launched' : 'Locked'}
+                          </span>
                         </span>
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        settings.lockdown ? 'bg-red-500' : 'bg-green-500'
-                      }`}></div>
-                      <span className="text-slate-400">
-                        Leaderboard: <span className={settings.lockdown ? 'text-red-400' : 'text-green-400'}>
-                          {settings.lockdown ? 'Locked' : 'Open'}
-                        </span>
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className={`w-2 h-2 rounded-full ${
-                        settings.showPodium ? 'bg-yellow-500' : 'bg-slate-500'
-                      }`}></div>
-                      <span className="text-slate-400">
-                        Podium: <span className={settings.showPodium ? 'text-yellow-400' : 'text-slate-400'}>
-                          {settings.showPodium ? 'Shown' : 'Hidden'}
-                        </span>
-                      </span>
-                    </div>
+                      </div>
+                    )}
+                    {settings && (
+                      <>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            settings.lockdown ? 'bg-red-500' : 'bg-green-500'
+                          }`}></div>
+                          <span className="text-slate-400">
+                            Leaderboard: <span className={settings.lockdown ? 'text-red-400' : 'text-green-400'}>
+                              {settings.lockdown ? 'Locked' : 'Open'}
+                            </span>
+                          </span>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <div className={`w-2 h-2 rounded-full ${
+                            settings.showPodium ? 'bg-yellow-500' : 'bg-slate-500'
+                          }`}></div>
+                          <span className="text-slate-400">
+                            Podium: <span className={settings.showPodium ? 'text-yellow-400' : 'text-slate-400'}>
+                              {settings.showPodium ? 'Shown' : 'Hidden'}
+                            </span>
+                          </span>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
               )}

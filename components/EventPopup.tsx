@@ -31,14 +31,14 @@ interface EventPopupProps {
 }
 
 const statusColors = {
-  UPCOMING: "from-blue-500/20 to-cyan-500/20 border-blue-500/30",
-  ONGOING: "from-green-500/20 to-emerald-500/20 border-green-500/30",
+  UPCOMING: "from-amber-500/20 to-orange-500/20 border-amber-500/30",
+  ONGOING: "from-white/10 to-white/5 border-white/30",
   COMPLETED: "from-purple-500/20 to-pink-500/20 border-purple-500/30",
 }
 
 const statusTextColors = {
-  UPCOMING: "text-blue-400",
-  ONGOING: "text-green-400",
+  UPCOMING: "text-amber-400",
+  ONGOING: "text-white",
   COMPLETED: "text-purple-400",
 }
 
@@ -111,7 +111,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[1100] flex items-center justify-center p-2 bg-black/80 backdrop-blur-sm overflow-y-auto"
+          className="fixed inset-0 z-[1100] flex items-center justify-center p-2 bg-black/90 backdrop-blur-md overflow-y-auto"
           onClick={onClose}
         >
           <motion.div
@@ -119,7 +119,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 60, scale: 1 }}
             transition={{ type: "spring", damping: 30, stiffness: 320 }}
-            className="relative w-full max-w-4xl max-h-screen overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-zinc-900/95 to-black/95 border border-zinc-800/50 backdrop-blur-xl
+            className="relative w-full max-w-4xl max-h-screen overflow-y-auto rounded-t-2xl sm:rounded-2xl bg-gradient-to-br from-neutral-900/95 to-zinc-900/95 border border-emerald-400/20 backdrop-blur-xl
               flex flex-col sm:flex-row"
             onClick={(e) => e.stopPropagation()}
             drag="y"
@@ -256,7 +256,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                 transition={{ duration: 0.3 }}
               >
                 <motion.div
-                  className="w-full bg-gradient-to-b from-blue-400 to-purple-400 rounded-full origin-top"
+                  className="w-full bg-gradient-to-b from-emerald-400 to-cyan-400 rounded-full origin-top"
                   style={{ height: `${scrollProgress * 100}%` }}
                   transition={{ type: "spring", stiffness: 300, damping: 30 }}
                 />
@@ -315,7 +315,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                 {(activeTab === 'details' || event.winners.length === 0) && (
                   <div className="grid grid-cols-1 gap-4">
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
-                      <Calendar className="w-6 h-6 text-blue-400 flex-shrink-0" />
+                      <Calendar className="w-6 h-6 text-white flex-shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm text-zinc-400">Date & Time</p>
                         <p className="text-sm font-medium text-white break-words">
@@ -324,7 +324,7 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                       </div>
                     </div>
                     <div className="flex items-center gap-3 p-3 rounded-lg bg-zinc-800/30">
-                      <MapPin className="w-6 h-6 text-green-400 flex-shrink-0" />
+                      <MapPin className="w-6 h-6 text-white flex-shrink-0" />
                       <div>
                         <p className="text-sm text-zinc-400">Division</p>
                         <p className="text-sm font-medium text-white">{event.division}</p>
@@ -365,13 +365,13 @@ export default function EventPopup({ event, isOpen, onClose, offsetForBubbleMenu
                 {(activeTab === 'details' || event.winners.length === 0) && (
                   <div className="p-4 rounded-lg bg-zinc-800/30">
                     <h3 className="font-semibold text-lg text-white mb-4 flex items-center gap-3">
-                      <Users className="w-6 h-6 text-cyan-400" />
+                      <Users className="w-6 h-6 text-teal-400" />
                       Guidelines & Rules
                     </h3>
                     <div className="space-y-3 max-h-40 overflow-y-auto custom-scroll pr-2">
                       {event.guidelines.split("\n").map((guideline, index) => (
                         <div key={index} className="flex items-start gap-3">
-                          <div className="w-2 h-2 rounded-full bg-cyan-400 mt-2 flex-shrink-0" />
+                          <div className="w-2 h-2 rounded-full bg-emerald-400 mt-2 flex-shrink-0" />
                           <p className="text-sm text-zinc-300">{guideline}</p>
                         </div>
                       ))}

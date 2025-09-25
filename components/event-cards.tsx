@@ -4,7 +4,6 @@ import { useState } from "react"
 import { motion } from "motion/react"
 import TiltedCard from "./TiltedCard"
 import EventPopup from "./EventPopup"
-import BubbleMenu from "./BubbleMenu"
 
 interface Event {
   id: string
@@ -29,14 +28,14 @@ interface EventCardsProps {
 }
 
 const statusColors = {
-  UPCOMING: "from-blue-500/20 to-cyan-500/20 border-blue-500/30",
-  ONGOING: "from-green-500/20 to-emerald-500/20 border-green-500/30",
+  UPCOMING: "from-amber-500/20 to-orange-500/20 border-amber-500/30",
+  ONGOING: "from-white/10 to-white/5 border-white/30",
   COMPLETED: "from-purple-500/20 to-pink-500/20 border-purple-500/30",
 }
 
 const statusTextColors = {
-  UPCOMING: "text-blue-400",
-  ONGOING: "text-green-400",
+  UPCOMING: "text-amber-400",
+  ONGOING: "text-white",
   COMPLETED: "text-purple-400",
 }
 
@@ -94,7 +93,7 @@ export default function EventCards({ events }: EventCardsProps) {
               type="button"
               aria-label={`View details for ${event.name}`}
               onClick={() => handleEventClick(event)}
-              className="relative w-full text-left bg-zinc-900/60 backdrop-blur-sm rounded-xl p-5 md:p-6 border border-zinc-800/60 hover:border-zinc-700/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/60 transition-all duration-300 hover:bg-zinc-900/80 disabled:opacity-60 overflow-hidden pointer-events-auto touch-manipulation md:hover:shadow-lg md:hover:shadow-blue-500/10"
+className="relative w-full text-left bg-card/60 backdrop-blur-sm rounded-xl p-5 md:p-6 border border-white/15 hover:border-white/35 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 transition-all duration-300 hover:bg-card/80 disabled:opacity-60 overflow-hidden pointer-events-auto touch-manipulation md:hover:shadow-lg md:hover:shadow-accent/10"
               whileTap={{ scale: 0.985 }}
             >
               <span className="absolute inset-0" aria-hidden="true" />
@@ -103,7 +102,7 @@ export default function EventCards({ events }: EventCardsProps) {
               <div className="flex items-center justify-between mb-4">
                 <div className="relative inline-flex items-center">
                   {event.status === "ONGOING" && (
-                    <span className="absolute -inset-0.5 rounded-full bg-green-500/20 animate-ping" aria-hidden="true" />
+                    <span className="absolute -inset-0.5 rounded-full bg-white/25 animate-ping" aria-hidden="true" />
                   )}
                   <div className={`relative px-3 py-1 rounded-full text-sm font-medium bg-gradient-to-r ${statusColors[event.status]} backdrop-blur-sm`}>
                     <span className={statusTextColors[event.status]}>
@@ -111,7 +110,7 @@ export default function EventCards({ events }: EventCardsProps) {
                     </span>
                   </div>
                 </div>
-                <div className="text-sm text-zinc-400">
+<div className="text-sm text-foreground/70">
                   {formatDate(event.date)}
                 </div>
               </div>
@@ -132,10 +131,10 @@ export default function EventCards({ events }: EventCardsProps) {
                   showTooltip={false}
                   displayOverlayContent={true}
                   overlayContent={
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent rounded-[15px] flex items-end p-3 md:p-4 pointer-events-none">
+                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-600/90 via-transparent to-transparent rounded-[15px] flex items-end p-3 md:p-4 pointer-events-none">
                       <div className="text-white w-full">
                         <div className="mb-2">
-                          <span className="px-2 py-1 rounded-full text-[10px] md:text-xs font-medium bg-zinc-800/70 text-zinc-200">
+                          <span className="px-2 py-1 rounded-full text-[10px] md:text-xs font-medium bg-white/20 text-white border border-white/30">
                             {event.division}
                           </span>
                         </div>
@@ -147,17 +146,17 @@ export default function EventCards({ events }: EventCardsProps) {
 
               {/* Event Details */}
               <div className="space-y-3">
-                <h3 className="text-lg md:text-xl font-semibold text-white group-hover:text-blue-400 transition-colors line-clamp-1" title={event.name}>
+<h3 className="text-lg md:text-xl font-semibold text-white transition-colors line-clamp-1 drop-shadow-sm" title={event.name}>
                   {event.name}
                 </h3>
-                <p className="text-zinc-400 text-xs md:text-sm line-clamp-1" title={event.type}>{event.type}</p>
+<p className="text-foreground/70 text-xs md:text-sm line-clamp-1" title={event.type}>{event.type}</p>
                 
                 {/* Points Preview */}
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-zinc-500">Points:</span>
+<span className="text-xs text-foreground/70">Points:</span>
                   <div className="flex gap-1">
                     {(["1","2","3"] as const).filter(p => event.points[p] !== undefined).map(position => (
-                      <span key={position} className="text-xs bg-amber-500/20 text-amber-400 px-2 py-1 rounded">
+<span key={position} className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
                         {event.points[position]}
                       </span>
                     ))}
@@ -166,8 +165,8 @@ export default function EventCards({ events }: EventCardsProps) {
 
                 {/* Winners Preview */}
                 {event.winners.filter(w => w.position <= 3).length > 0 && (
-                  <div className="pt-2 border-t border-zinc-800">
-                    <span className="text-xs text-zinc-500 mb-2 block">Winners:</span>
+<div className="pt-2 border-t border-border/60">
+<span className="text-xs text-foreground/60 mb-2 block">Winners:</span>
                     <div className="space-y-1">
                       {event.winners
                         .filter(w => w.position <= 3)
@@ -181,10 +180,10 @@ export default function EventCards({ events }: EventCardsProps) {
                           return (
                             <div key={winner.id} className="flex justify-between items-center text-sm">
                               <div className="flex-1 min-w-0">
-                                <span className="text-zinc-300 truncate block" title={displayPrimary}>{displayPrimary}</span>
-                                {displaySecondary && <span className="text-[10px] text-zinc-500 truncate block" title={displaySecondary}>{displaySecondary}</span>}
+<span className="text-foreground truncate block" title={displayPrimary}>{displayPrimary}</span>
+{displaySecondary && <span className="text-[10px] text-foreground/60 truncate block" title={displaySecondary}>{displaySecondary}</span>}
                               </div>
-                              <span className="text-purple-400 text-xs ml-2 flex-shrink-0">{positionText}</span>
+<span className="text-secondary text-xs ml-2 flex-shrink-0">{positionText}</span>
                             </div>
                           )
                         })
@@ -193,7 +192,7 @@ export default function EventCards({ events }: EventCardsProps) {
                   </div>
                 )}
 
-                <span className="block w-full mt-4 py-2 px-4 bg-white/10 group-hover:bg-white/20 text-white rounded-lg transition-colors text-sm font-medium text-center pointer-events-none">
+<span className="block w-full mt-4 py-2 px-4 bg-white/10 group-hover:bg-white/20 text-white rounded-lg border border-white/20 hover:border-white/40 transition-colors text-sm font-medium text-center pointer-events-none">
                   View Details
                 </span>
               </div>

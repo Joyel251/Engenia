@@ -2,7 +2,9 @@
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
 import BubbleMenu from "@/components/BubbleMenu";
-import LightRays from "@/components/light-rays";
+import nextDynamic from 'next/dynamic'
+
+const Beams = nextDynamic(() => import('@/components/Beams'), { ssr: false })
 
 const menuItems = [
   {
@@ -227,9 +229,9 @@ export default function PhotoGalleryPage() {
   };
 
   return (
-    <div className="relative min-h-screen w-full bg-black text-white overflow-hidden">
+    <div className="relative min-h-screen w-full text-foreground overflow-hidden" style={{backgroundColor: 'transparent'}}>
       {/* BubbleMenu Navigation */}
-      <BubbleMenu
+<BubbleMenu
         logo="/logo.jpg"
         items={menuItems}
         menuAriaLabel="Toggle navigation"
@@ -241,24 +243,9 @@ export default function PhotoGalleryPage() {
         staggerDelay={0.1}
       />
 
-      {/* LightRays background */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <LightRays
-          raysOrigin="top-center"
-          raysColor="#ffffff"
-          raysSpeed={1.2}
-          lightSpread={1.1}
-          rayLength={2.2}
-          pulsating={true}
-          fadeDistance={1.1}
-          saturation={1.0}
-          followMouse={true}
-          mouseInfluence={0.12}
-          noiseAmount={0.04}
-          distortion={0.08}
-          glowStrength={0.7}
-          glowRadius={0.22}
-        />
+      {/* Beams Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#00bcd4" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />
       </div>
 
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">
@@ -272,7 +259,7 @@ export default function PhotoGalleryPage() {
               : 'translate-y-12 opacity-0'
           }`}
         >
-          <h1 className="text-4xl md:text-6xl font-black mb-10 text-center font-mono drop-shadow-2xl">
+          <h1 className="text-4xl md:text-6xl font-black mb-10 text-center font-mono drop-shadow-2xl text-white">
             Photo Gallery
           </h1>
         </div>

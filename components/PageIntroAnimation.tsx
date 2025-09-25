@@ -1,14 +1,15 @@
 "use client"
 
 import { motion } from "motion/react"
-import { ReactNode } from "react"
+import { ReactNode, ComponentProps } from "react"
 
-interface PageIntroAnimationProps {
+type MotionDivProps = ComponentProps<typeof motion.div>
+interface PageIntroAnimationProps extends Omit<MotionDivProps, 'ref' | 'initial' | 'animate' | 'transition' | 'exit'> {
   children: ReactNode
   className?: string
 }
 
-export default function PageIntroAnimation({ children, className = "" }: PageIntroAnimationProps) {
+export default function PageIntroAnimation({ children, className = "", ...rest }: PageIntroAnimationProps) {
   return (
     <motion.div
       initial={{ 
@@ -27,6 +28,7 @@ export default function PageIntroAnimation({ children, className = "" }: PageInt
         staggerChildren: 0.1
       }}
       className={className}
+      {...rest}
     >
       {children}
     </motion.div>

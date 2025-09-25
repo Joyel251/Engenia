@@ -42,7 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans ${spaceGrotesk.variable} ${dmSans.variable}`}>
+      <body className={`font-sans ${spaceGrotesk.variable} ${dmSans.variable} text-foreground`}>
         <Suspense fallback={null}>
           {children}
           <Analytics />

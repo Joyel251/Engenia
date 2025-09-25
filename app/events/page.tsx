@@ -2,6 +2,8 @@ import { supabaseAdmin, TABLES } from '@/lib/supabase';
 import EventCards from "@/components/event-cards"
 import nextDynamic from 'next/dynamic'
 
+const Beams = nextDynamic(() => import('@/components/Beams'), { ssr: false })
+
 // Simple bounded retry for transient connection failures (e.g., first cold start)
 async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): Promise<T> {
   let lastErr: any
@@ -22,7 +24,6 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
 }
 
 import BubbleMenu from '@/components/BubbleMenu'
-import LightRays from '@/components/light-rays'
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -94,10 +95,10 @@ export default async function EventsPage() {
   console.log('[events] Final processed events:', events.length, events.map(e => ({ id: e.id, name: e.name, status: e.status })))
 
   return (
-    <main className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden" aria-labelledby="events-heading">
-      {/* Light Rays Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <LightRays />
+<main className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 text-foreground overflow-hidden" style={{backgroundColor: 'transparent'}} aria-labelledby="events-heading">
+      {/* Beams Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Beams beamWidth={2} beamHeight={14} beamNumber={8} lightColor="#00bcd4" speed={1.2} noiseIntensity={1.4} scale={0.15} rotation={0} />
       </div>
       
       {/* Floating navigation menu - Hide logo on events page */}

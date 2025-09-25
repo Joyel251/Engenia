@@ -21,7 +21,7 @@ async function withRetry<T>(fn: () => Promise<T>, attempts = 3, delayMs = 250): 
 
 // Dynamic imports for client components
 const BubbleMenu = nextDynamic(() => import('@/components/BubbleMenu'), { ssr: false })
-const LightRays = nextDynamic(() => import('@/components/light-rays'), { ssr: false })
+const Beams = nextDynamic(() => import('@/components/Beams'), { ssr: false })
 const PageIntroAnimation = nextDynamic(() => import('@/components/PageIntroAnimation'), { ssr: false })
 const AnimatedPageHeader = nextDynamic(() => import('@/components/PageIntroAnimation').then(mod => ({ default: mod.AnimatedPageHeader })), { ssr: false })
 const AnimatedPageContent = nextDynamic(() => import('@/components/PageIntroAnimation').then(mod => ({ default: mod.AnimatedPageContent })), { ssr: false })
@@ -145,10 +145,10 @@ export default async function LeaderboardPage() {
     });
 
     return (
-      <PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden" aria-labelledby="leaderboard-heading">
-        {/* Light Rays Background */}
-        <div className="absolute inset-0 pointer-events-none">
-          <LightRays />
+<PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 text-foreground overflow-hidden" style={{backgroundColor: 'transparent'}} aria-labelledby="leaderboard-heading">
+        {/* Beams Background */}
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#00bcd4" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />
         </div>
         
         {/* Floating navigation menu - Hide logo on leaderboard page */}
@@ -196,9 +196,9 @@ export default async function LeaderboardPage() {
   } catch (error) {
     console.error('Error fetching leaderboard data after retries:', error);
     return (
-      <PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 bg-black text-white overflow-hidden">
-        <div className="absolute inset-0 pointer-events-none">
-          <LightRays />
+<PageIntroAnimation className="relative min-h-screen w-full px-4 md:px-10 pt-24 pb-24 text-foreground overflow-hidden" style={{backgroundColor: 'transparent'}}>
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#00bcd4" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />
         </div>
         <BubbleMenu hideLogo useFixedPosition />
         <div className="relative z-10 max-w-7xl mx-auto text-center">

@@ -1,17 +1,16 @@
 "use client";
 
-import LightRays from "@/components/light-rays";
-import BlurText from "@/components/blur-text";
 import ShinyText from "@/components/shiny-text";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "motion/react";
+import nextDynamic from 'next/dynamic';
+
+const Beams = nextDynamic(() => import('@/components/Beams'), { ssr: false });
 
 export default function SplashScreen() {
-  const [showShinyText, setShowShinyText] = useState(false);
   const [showNavigationPrompt, setShowNavigationPrompt] = useState(false);
-  const [isTransitioning, setIsTransitioning] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
@@ -37,26 +36,24 @@ export default function SplashScreen() {
   }, []);
 
   const handleAnimationComplete = () => {
-    console.log("Engenia 2025 animation completed!");
-    setShowShinyText(true);
-    
     // Show navigation prompt after a short delay
     setTimeout(() => {
       setShowNavigationPrompt(true);
-    }, 1000);
-  };
-
-  const handleNavigation = () => {
-    setIsTransitioning(true);
-    
-    // Navigate after transition starts
-    setTimeout(() => {
-      router.push('/home');
     }, 800);
   };
 
+  const handleNavigation = () => {
+    // Navigate immediately without any transition
+    router.push('/home');
+  };
+
   return (
-    <div className="relative min-h-screen w-full overflow-hidden bg-black">
+    <div className="relative min-h-screen w-full overflow-hidden" style={{backgroundColor: 'transparent'}}>
+      {/* Beams Background */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#00bcd4" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />
+      </div>
+
       {/* Static Logo with College Name */}
       <div className={`absolute top-4 sm:top-8 left-4 sm:left-8 z-20 transition-all duration-1000 ease-out ${
         showLogo 
@@ -76,41 +73,10 @@ export default function SplashScreen() {
             <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
           </div>
           
-          {/* College Name with Shiny Text Effect */}
-          <div className="flex flex-col">
-            <ShinyText 
-              text="Loyola-ICAM College of"
-              className="text-white text-sm sm:text-lg md:text-xl lg:text-2xl font-bold tracking-wide"
-              speed={3}
-            />
-            <ShinyText 
-              text="Engineering and Technology"
-              className="text-white text-sm sm:text-lg md:text-xl lg:text-2xl font-bold tracking-wide mt-1"
-              speed={3}
-            />
-          </div>
+          {/* No text on splash screen as requested */}
         </div>
       </div>
 
-      {/* Light rays background */}
-      <div className="absolute inset-0 z-0">
-        <LightRays
-          raysOrigin="top-center"
-          raysColor="#FFFFFF"
-          raysSpeed={1.2}
-          lightSpread={isMobile ? 2.5 : 1.8}
-          rayLength={isMobile ? 3.0 : 2.5}
-          followMouse={true}
-          mouseInfluence={isMobile ? 0.3 : 0.2}
-          noiseAmount={0}
-          distortion={0.05}
-          pulsating={false}
-          fadeDistance={isMobile ? 0.8 : 0.7}
-          saturation={1.1}
-          className="w-full h-full"
-        />
-      </div>
-      
       {/* Main content */}
       <div 
         className="absolute inset-0 z-10 cursor-pointer"
@@ -140,30 +106,22 @@ export default function SplashScreen() {
           </div>
         </div>
 
-        {/* Bottom navigation prompt - moved up for mobile */}
         {showNavigationPrompt && (
           <div className={`absolute left-1/2 transform -translate-x-1/2 animate-fade-in ${
             isMobile ? 'bottom-20 sm:bottom-16' : 'bottom-12'
           }`}>
-            {/* Animated dots */}
             <div className="flex justify-center items-center space-x-2 mb-4">
               <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               <div className="w-2 h-2 bg-white/70 rounded-full animate-pulse" style={{animationDelay: '0.2s'}}></div>
               <div className="w-2 h-2 bg-white/40 rounded-full animate-pulse" style={{animationDelay: '0.4s'}}></div>
             </div>
-            
             <p className="text-white/60 text-xs sm:text-sm tracking-widest uppercase text-center">
               {isMobile ? 'Tap Anywhere to Continue' : 'Click Anywhere to Continue'}
             </p>
-          
           </div>
         )}
       </div>
 
-      {/* Transition Overlay */}
-      {isTransitioning && (
-        <div className="fixed inset-0 z-50 bg-black animate-fade-in" />
-      )}
     </div>
   );
 }

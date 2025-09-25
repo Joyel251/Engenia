@@ -1,3 +1,4 @@
+"use client"
 import { forwardRef, useImperativeHandle, useEffect, useRef, useMemo, FC, ReactNode } from 'react';
 
 import * as THREE from 'three';
@@ -115,7 +116,7 @@ const ResponsiveCamera: FC = () => {
 const CanvasWrapper: FC<{ children: ReactNode }> = ({ children }) => (
   <div className="w-full h-screen" style={{ minHeight: '100vh', height: '100vh' }}>
     <Canvas 
-      dpr={[1, 2]} 
+      dpr={[1, 1.5]} 
       frameloop="always" 
       className="w-full h-full"
       style={{ 
@@ -357,7 +358,7 @@ const Beams: FC<BeamsProps> = ({
         lightColor={lightColor}
         rotation={rotation}
       />
-      <ambientLight intensity={1} />
+      <ambientLight intensity={0.7} />
       <color attach="background" args={['#000000']} />
       <ResponsiveCamera />
     </CanvasWrapper>
@@ -430,7 +431,7 @@ const MergedPlanes = forwardRef<
   const mesh = useRef<THREE.Mesh<THREE.BufferGeometry, THREE.ShaderMaterial>>(null!);
   useImperativeHandle(ref, () => mesh.current);
   const geometry = useMemo(
-    () => createStackedPlanesBufferGeometry(count, width, height, 0, 100),
+    () => createStackedPlanesBufferGeometry(count, width, height, 0, 60),
     [count, width, height]
   );
   useFrame((_, delta) => {

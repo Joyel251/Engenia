@@ -84,6 +84,8 @@ export default function AdminDashboard() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [bonusSubmitting, setBonusSubmitting] = useState(false)
   const [bonusForm, setBonusForm] = useState({ deptId: '', points: 0, reason: '' })
+  const [launchStatus, setLaunchStatus] = useState<boolean | null>(null)
+  const [launchStatusLoading, setLaunchStatusLoading] = useState(false)
   
   // Winner form state
   const [winnerForm, setWinnerForm] = useState({
@@ -114,12 +116,13 @@ export default function AdminDashboard() {
 
   const fetchInitialData = async () => {
     try {
-      // Fetch events, departments, announcements, and settings
-      const [eventsRes, deptsRes, announcementsRes, settingsRes] = await Promise.all([
+      // Fetch events, departments, announcements, settings, and launch status
+      const [eventsRes, deptsRes, announcementsRes, settingsRes, launchRes] = await Promise.all([
         fetch('/api/events'),
         fetch('/api/departments'),
         fetch('/api/announcements'),
-        fetch('/api/settings')
+        fetch('/api/settings'),
+        fetch('/api/launchstatus')
       ])
 
       if (eventsRes.ok) {
@@ -144,6 +147,13 @@ export default function AdminDashboard() {
       } else {
         // Fallback default settings
         setSettings({ id: '1', leaderboardVisible: true, lockdown: false, showPodium: false })
+      }
+
+      if (launchRes.ok) {
+        const launchData = await launchRes.json()
+        setLaunchStatus(!!launchData.launched)
+      } else {
+        setLaunchStatus(false)
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -399,6 +409,33 @@ export default function AdminDashboard() {
     }
   }
 
+  const handleToggleLaunchStatus = async () => {
+    setLaunchStatusLoading(true)
+    try {
+      const token = localStorage.getItem('admin_token')
+      const response = await fetch('/api/nirvakixypss/toggle-launch', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setLaunchStatus(data.launched)
+        toast.success(data.message || (data.launched ? 'Website launched successfully!' : 'Website locked successfully!'))
+      } else {
+        const error = await response.json()
+        toast.error(error.error || 'Failed to toggle launch status')
+      }
+    } catch (error) {
+      console.error('Error toggling launch status:', error)
+      toast.error('Network error')
+    } finally {
+      setLaunchStatusLoading(false)
+    }
+  }
+
   const handleAwardBonus = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!bonusForm.deptId || !Number.isFinite(Number(bonusForm.points)) || Number(bonusForm.points) === 0 || !bonusForm.reason.trim()) {
@@ -538,42 +575,79 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-4">
-              {/* Settings Controls */}
-              {settings && (
-                <div className="space-y-3 sm:space-y-0">
-                  {/* Mobile: Section Headers */}
-                  <div className="block sm:hidden">
-                    <h3 className="text-sm font-medium text-slate-300 mb-2">System Controls</h3>
+              {/* Launch Status Control - Priority */}
+              <div className="bg-slate-700/50 rounded-lg px-4 py-2">
+                <div className="flex items-center space-x-3">
+                  {/* Status Indicator */}
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full ${
+                      launchStatus ? 'bg-green-500' : 'bg-red-500'
+                    }`}></div>
+                    <span className="text-xs text-slate-300">
+                      Website: <span className={launchStatus ? 'text-green-400' : 'text-red-400'}>
+                        {launchStatus ? 'Launched' : 'Locked'}
+                      </span>
+                    </span>
                   </div>
                   
-                  {/* Leaderboard Controls */}
-                  <div className="bg-slate-700/30 rounded-lg p-3 sm:p-0 sm:bg-transparent">
-                    <div className="block sm:hidden mb-2">
-                      <span className="text-xs text-slate-400">Leaderboard Management</span>
+                  {/* Toggle Button */}
+                  <button
+                    onClick={handleToggleLaunchStatus}
+                    disabled={launchStatusLoading || launchStatus === null}
+                    className={`flex items-center space-x-2 px-3 py-1.5 rounded transition-all duration-200 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                      launchStatus 
+                        ? 'bg-red-600 hover:bg-red-700 text-white' 
+                        : 'bg-green-600 hover:bg-green-700 text-white'
+                    }`}
+                    title={launchStatus ? 'Lock website - Prevent public access' : 'Launch website - Allow public access'}
+                  >
+                    {launchStatus ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                    <span>
+                      {launchStatus ? 'Lock' : 'Launch'}
+                    </span>
+                    {launchStatusLoading && (
+                      <div className="animate-spin rounded-full h-2 w-2 border border-white border-t-transparent ml-1"></div>
+                    )}
+                  </button>
+                </div>
+              </div>
+              
+              {/* System Controls */}
+              <div className="space-y-3 sm:space-y-0">
+                {/* Mobile: Section Headers */}
+                <div className="block sm:hidden">
+                  <h3 className="text-sm font-medium text-slate-300 mb-2">System Controls</h3>
+                </div>
+                
+                {/* Settings Controls */}
+                {settings && (
+                  <>
+                    {/* Leaderboard Controls */}
+                    <div className="bg-slate-700/30 rounded-lg p-3 sm:p-0 sm:bg-transparent">
+                      <div className="block sm:hidden mb-2">
+                        <span className="text-xs text-slate-400">Leaderboard Management</span>
+                      </div>
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+                        <button
+                          onClick={() => handleUpdateSettings({ lockdown: !settings.lockdown })}
+                          disabled={isSubmitting}
+                          className={`flex items-center justify-center sm:justify-start space-x-2 px-3 py-2.5 sm:py-2 rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                            settings.lockdown 
+                              ? 'bg-red-600 hover:bg-red-700 text-white border-2 border-red-500/50' 
+                              : 'bg-green-600 hover:bg-green-700 text-white border-2 border-green-500/50'
+                          }`}
+                          title={settings.lockdown ? 'Unlock leaderboard - Allow students to see rankings' : 'Lock leaderboard - Hide rankings from students'}
+                        >
+                          {settings.lockdown ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
+                          <span className="font-medium">
+                            {settings.lockdown ? 'Unlock Leaderboard' : 'Lock Leaderboard'}
+                          </span>
+                          {isSubmitting && (
+                            <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent ml-1"></div>
+                          )}
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
-                      <button
-                        onClick={() => handleUpdateSettings({ lockdown: !settings.lockdown })}
-                        disabled={isSubmitting}
-                        className={`flex items-center justify-center sm:justify-start space-x-2 px-3 py-2.5 sm:py-2 rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
-                          settings.lockdown 
-                            ? 'bg-red-600 hover:bg-red-700 text-white border-2 border-red-500/50' 
-                            : 'bg-green-600 hover:bg-green-700 text-white border-2 border-green-500/50'
-                        }`}
-                        title={settings.lockdown ? 'Unlock leaderboard - Allow students to see rankings' : 'Lock leaderboard - Hide rankings from students'}
-                      >
-                        {settings.lockdown ? <Unlock className="w-4 h-4" /> : <Lock className="w-4 h-4" />}
-                        <span className="font-medium">
-                          {settings.lockdown ? 'Unlock Leaderboard' : 'Lock Leaderboard'}
-                        </span>
-                        {isSubmitting && (
-                          <div className="animate-spin rounded-full h-3 w-3 border border-white border-t-transparent ml-1"></div>
-                        )}
-                      </button>
-                      
-                      {/* Removed Show/Hide Leaderboard control; lock controls suffice */}
-                    </div>
-                  </div>
                   
                   {/* Podium Controls */}
                   <div className="bg-slate-700/30 rounded-lg p-3 sm:p-0 sm:bg-transparent">
@@ -608,14 +682,25 @@ export default function AdminDashboard() {
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
+                  </>
+                )}
+              </div>
               
               {/* Status Indicators (Mobile) */}
-              {settings && (
+              {(launchStatus !== null || settings) && (
                 <div className="block sm:hidden bg-slate-700/20 rounded-lg p-3 border border-slate-600/30">
                   <h3 className="text-sm font-medium text-slate-300 mb-2">Current Status</h3>
-                  <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="grid grid-cols-3 gap-2 text-xs">
+                    <div className="flex items-center space-x-2">
+                      <div className={`w-2 h-2 rounded-full ${
+                        launchStatus ? 'bg-green-500' : 'bg-red-500'
+                      }`}></div>
+                      <span className="text-slate-400">
+                        Website: <span className={launchStatus ? 'text-green-400' : 'text-red-400'}>
+                          {launchStatus ? 'Launched' : 'Locked'}
+                        </span>
+                      </span>
+                    </div>
                     <div className="flex items-center space-x-2">
                       <div className={`w-2 h-2 rounded-full ${
                         settings.lockdown ? 'bg-red-500' : 'bg-green-500'
@@ -626,7 +711,6 @@ export default function AdminDashboard() {
                         </span>
                       </span>
                     </div>
-                    {/* Removed page visibility indicator */}
                     <div className="flex items-center space-x-2">
                       <div className={`w-2 h-2 rounded-full ${
                         settings.showPodium ? 'bg-yellow-500' : 'bg-slate-500'

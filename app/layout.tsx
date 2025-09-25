@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Suspense } from "react"
 import { Toaster } from "sonner"
 import NotificationProvider from "@/components/NotificationProvider"
+import LaunchGate from "@/components/LaunchGate"
 import "./globals.css"
 import { validateEnv } from "@/lib/validateEnv"
 
@@ -28,11 +29,11 @@ const dmSans = DM_Sans({
 export const metadata: Metadata = {
   title: "Engenia2025",
   description: "Join us for the most vibrant cultural festival of the year",
-//  { icons: {
-  //  icon: "/favicon.png",
-    //shortcut: "/favicon.png",
-    //apple: "/favicon.png",
-  //},
+  icons: {
+    icon: "/favicon.png",
+    shortcut: "/favicon.png",
+    apple: "/favicon.png",
+  },
 }
 
 export default function RootLayout({
@@ -44,6 +45,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans ${spaceGrotesk.variable} ${dmSans.variable} text-foreground`}>
         <Suspense fallback={null}>
+          <LaunchGate />
           {children}
           <Analytics />
         </Suspense>

@@ -9,13 +9,17 @@ import dynamic from 'next/dynamic';
 
 const Beams = dynamic(() => import('@/components/Beams'), { ssr: false });
 
-export default function SplashScreen() {
+interface PageProps {
+  params: { [key: string]: string | string[] | undefined };
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default function SplashScreen({ params = {}, searchParams = {} }: PageProps) {
   const [showNavigationPrompt, setShowNavigationPrompt] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [launched, setLaunched] = useState<boolean | null>(null);
-  // Accept prop to ignore launch lock
-  const ignoreLaunchLock = typeof window !== 'undefined' && (window.location.pathname.includes('/nirvakixypss/preview') || (arguments && arguments[0] && arguments[0].ignoreLaunchLock));
+  const ignoreLaunchLock = (typeof window !== 'undefined' && window.location.pathname.includes('/nirvakixypss/preview'));
   const router = useRouter();
 
   useEffect(() => {
@@ -29,10 +33,10 @@ export default function SplashScreen() {
     const logoTimer = setTimeout(() => {
       setShowLogo(true);
     }, 500);
-    // Fetch launch status
-    fetch('/api/launch-status')
+    // Fetch launch status (correct endpoint)
+    fetch('/api/launchstatus', { cache: 'no-store' })
       .then(res => res.json())
-      .then(data => setLaunched(data.launched))
+      .then(data => setLaunched(!!data.launched))
       .catch(() => setLaunched(false));
     return () => {
       clearTimeout(logoTimer);

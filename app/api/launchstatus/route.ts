@@ -1,13 +1,34 @@
 import { NextResponse } from 'next/server'
-
-// In-memory flag (resets on server restart). Replace with DB if persistence is required.
-const g = globalThis as any
-if (g.__ENGENIA_LAUNCHED__ === undefined) {
-  g.__ENGENIA_LAUNCHED__ = false
-}
+import { supabaseAdmin, TABLES } from '@/lib/supabase'
 
 export async function GET() {
-  return NextResponse.json({ launched: !!g.__ENGENIA_LAUNCHED__ }, { status: 200 })
+  try {
+    const { data, error } = await supabaseAdmin
+      .from(TABLES.SETTINGS)
+      .select('launched')
+      .single()
+    
+    if (error) {
+      // If no settings exist, create default with launched: false
+      const { data: newSettings, error: insertError } = await supabaseAdmin
+        .from(TABLES.SETTINGS)
+        .insert([{ id: '1', launched: false, leaderboardVisible: true, lockdown: false, showPodium: false }])
+        .select('launched')
+        .single()
+      
+      if (insertError) {
+        console.error('Failed to create settings:', insertError)
+        return NextResponse.json({ launched: false }, { status: 200 })
+      }
+      
+      return NextResponse.json({ launched: !!newSettings.launched }, { status: 200 })
+    }
+    
+    return NextResponse.json({ launched: !!data.launched }, { status: 200 })
+  } catch (e) {
+    console.error('Launch status GET error:', e)
+    return NextResponse.json({ launched: false }, { status: 200 })
+  }
 }
 
 export async function POST(request: Request) {
@@ -19,9 +40,25 @@ export async function POST(request: Request) {
         launched = body.launched
       }
     } catch {}
-    g.__ENGENIA_LAUNCHED__ = launched
-    return NextResponse.json({ launched }, { status: 200 })
+    
+    // Update or insert the launch status in database
+    const { data, error } = await supabaseAdmin
+      .from(TABLES.SETTINGS)
+      .upsert(
+        { id: '1', launched },
+        { onConflict: 'id' }
+      )
+      .select('launched')
+      .single()
+    
+    if (error) {
+      console.error('Failed to update launch status:', error)
+      return NextResponse.json({ error: 'Failed to set launch status' }, { status: 500 })
+    }
+    
+    return NextResponse.json({ launched: !!data.launched }, { status: 200 })
   } catch (e) {
+    console.error('Launch status POST error:', e)
     return NextResponse.json({ error: 'Failed to set launch status' }, { status: 500 })
   }
 }

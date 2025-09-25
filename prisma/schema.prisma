@@ -58,6 +58,7 @@ model Settings {
   leaderboardVisible Boolean @default(true)
   lockdown           Boolean @default(false)
   showPodium         Boolean @default(true)
+  launched           Boolean @default(false)
 }
 
 model Admin {

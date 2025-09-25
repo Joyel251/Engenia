@@ -73,6 +73,7 @@ export interface Settings {
   leaderboardVisible: boolean
   lockdown: boolean
   showPodium: boolean
+  launched?: boolean
 }
 
 export interface Admin {

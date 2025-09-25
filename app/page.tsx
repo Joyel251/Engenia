@@ -5,14 +5,17 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { motion } from "motion/react";
-import nextDynamic from 'next/dynamic';
+import dynamic from 'next/dynamic';
 
-const Beams = nextDynamic(() => import('@/components/Beams'), { ssr: false });
+const Beams = dynamic(() => import('@/components/Beams'), { ssr: false });
 
 export default function SplashScreen() {
   const [showNavigationPrompt, setShowNavigationPrompt] = useState(false);
   const [showLogo, setShowLogo] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [launched, setLaunched] = useState<boolean | null>(null);
+  // Accept prop to ignore launch lock
+  const ignoreLaunchLock = typeof window !== 'undefined' && (window.location.pathname.includes('/nirvakixypss/preview') || (arguments && arguments[0] && arguments[0].ignoreLaunchLock));
   const router = useRouter();
 
   useEffect(() => {
@@ -20,20 +23,30 @@ export default function SplashScreen() {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768 || 'ontouchstart' in window);
     };
-    
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
     // Show logo with delay
     const logoTimer = setTimeout(() => {
       setShowLogo(true);
     }, 500);
-
+    // Fetch launch status
+    fetch('/api/launch-status')
+      .then(res => res.json())
+      .then(data => setLaunched(data.launched))
+      .catch(() => setLaunched(false));
     return () => {
       clearTimeout(logoTimer);
       window.removeEventListener('resize', checkMobile);
     };
   }, []);
+  if (launched === false && !ignoreLaunchLock) {
+    return (
+      <div className="locked-screen flex flex-col items-center justify-center min-h-screen bg-black text-white">
+        <h1 className="text-4xl font-bold mb-4">Coming Soon</h1>
+        <p className="text-lg">The website is not launched yet.</p>
+      </div>
+    );
+  }
 
   const handleAnimationComplete = () => {
     // Show navigation prompt after a short delay
@@ -48,7 +61,7 @@ export default function SplashScreen() {
   };
 
   return (
-    <div className="relative min-h-screen w-full overflow-hidden" style={{backgroundColor: 'transparent'}}>
+  <div className="relative min-h-screen w-full overflow-hidden" style={{backgroundColor: 'transparent'}}>
       {/* Beams Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#00bcd4" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />

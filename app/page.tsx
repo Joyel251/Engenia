@@ -71,55 +71,65 @@ export default function SplashScreen({ params = {}, searchParams = {} }: PagePro
         <Beams beamWidth={2} beamHeight={15} beamNumber={12} lightColor="#00bcd4" speed={2} noiseIntensity={1.75} scale={0.2} rotation={0} />
       </div>
 
-      {/* Static Logo with College Name */}
-      <div className={`absolute top-4 sm:top-8 left-4 sm:left-8 z-20 transition-all duration-1000 ease-out ${
-        showLogo 
-          ? 'opacity-100 transform translate-y-0 scale-100' 
-          : 'opacity-0 transform -translate-y-8 scale-90'
-      }`}>
-        <div className="flex items-center gap-2 sm:gap-4">
-          <div className="relative group">
-            <img 
-              src="/logo.jpg" 
-              alt="ENGENIA Logo" 
-              className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 lg:w-24 lg:h-24 rounded-full object-cover shadow-2xl hover:scale-110 transition-transform duration-300 border-2 border-white/20 hover:border-white/40"
-              style={{
-                filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.3))'
-              }}
-            />
-            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400/20 to-purple-400/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 animate-pulse"></div>
-          </div>
-          
-          {/* No text on splash screen as requested */}
-        </div>
-      </div>
 
       {/* Main content */}
       <div 
         className="absolute inset-0 z-10 cursor-pointer"
         onClick={showNavigationPrompt ? handleNavigation : undefined}
       >
-        {/* Centered title */}
+        {/* Centered content with logo above - slightly higher position */}
         <div className="h-full flex items-center justify-center px-4">
-          <div className="text-center">
+          <div className="text-center transform -translate-y-8 sm:-translate-y-6 md:-translate-y-4">
+            {/* College Logo - centered above Engenia image */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 10, filter: 'blur(6px)' }}
-              animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)' }}
-              transition={{ duration: 1.2, ease: 'easeOut' }}
-              onAnimationComplete={handleAnimationComplete}
-              className="mx-auto"
+              initial={{ opacity: 0, scale: 0.8, y: -20, filter: 'blur(6px)' }}
+              animate={{ 
+                opacity: showLogo ? 1 : 0, 
+                scale: showLogo ? 1 : 0.8, 
+                y: showLogo ? 0 : -20, 
+                filter: showLogo ? 'blur(0px)' : 'blur(6px)' 
+              }}
+              transition={{ duration: 1.0, ease: 'easeOut', delay: 0.2 }}
+              className="mb-8 sm:mb-10 md:mb-12"
             >
-              <div className="relative mx-auto w-[220px] sm:w-[320px] md:w-[420px] lg:w-[560px] aspect-[3/1]">
-                <Image
-                  src="/engenia.png"
-                  alt="Engenia"
-                  fill
-                  sizes="(max-width: 640px) 220px, (max-width: 768px) 320px, (max-width: 1024px) 420px, 560px"
-                  priority
-                  className="object-contain"
+              <div className="mx-auto w-fit">
+                <img 
+                  src="/logo5.png" 
+                  alt="ENGENIA Logo" 
+                  className="w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 lg:w-32 lg:h-32 object-contain shadow-2xl hover:scale-110 transition-transform duration-300 mx-auto"
+                  style={{
+                    filter: 'drop-shadow(0 0 30px rgba(255, 255, 255, 0.4))'
+                  }}
                 />
               </div>
             </motion.div>
+
+            {/* Engenia Image - 'E' aligned with beam centerline */}
+         <motion.div
+  initial={{ opacity: 0, scale: 0.9, y: 10, filter: 'blur(6px)', x: 27 }}
+  animate={{ opacity: 1, scale: 1, y: 0, filter: 'blur(0px)', x: 27 }}
+  transition={{ duration: 1.2, ease: 'easeOut' }}
+  onAnimationComplete={handleAnimationComplete}
+  className="mx-auto"
+>
+  <div className="relative mx-auto w-[220px] sm:w-[320px] md:w-[420px] lg:w-[560px] aspect-[3/1]">
+    <Image
+      src="/engenia.png"
+      alt="Engenia"
+      fill
+      sizes="(max-width: 640px) 220px, (max-width: 768px) 320px, (max-width: 1024px) 420px, 560px"
+      priority
+      className="object-contain"
+    />
+  </div>
+</motion.div>
+
+
+
+
+
+
+
           </div>
         </div>
 

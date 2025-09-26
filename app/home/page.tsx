@@ -134,10 +134,22 @@ export default function LandingPage() {
           <div className="relative z-10 text-center px-4 max-w-6xl mx-auto">
             {/* ENGENIA Logo/Image */}
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: "easeOut" }}
-              className="mb-8"
+              initial={{ 
+                opacity: 0, 
+                scale: 0.9, 
+                y: 10, 
+                filter: 'blur(6px)', 
+                x: isMobile ? 15 : 27 
+              }}
+              animate={{ 
+                opacity: 1, 
+                scale: 1, 
+                y: 0, 
+                filter: 'blur(0px)', 
+                x: isMobile ? 15 : 27 
+              }}
+              transition={{ duration: 1.2, ease: 'easeOut' }}
+              className="mx-auto mb-8"
             >
               <div className="relative mx-auto w-[280px] sm:w-[400px] md:w-[500px] lg:w-[600px] xl:w-[700px] aspect-[3/1]">
                 <Image
@@ -169,7 +181,7 @@ export default function LandingPage() {
                   speed={3}
                 />
                 <ShinyText 
-                  text="Sep 29, 30"
+                  text="Sep 29, 30 - 2025"
                   className="text-white/90 text-base sm:text-lg md:text-xl font-semibold tracking-wide"
                   speed={3}
                 />

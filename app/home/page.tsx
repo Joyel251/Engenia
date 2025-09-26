@@ -12,7 +12,7 @@ import Image from "next/image"
 const menuItems = [
   {
     label: 'home',
-    href: '/',
+    href: '/home',
     ariaLabel: 'Home',
     rotation: -8,
     hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' }
@@ -85,7 +85,7 @@ export default function LandingPage() {
 
       {/* BubbleMenu Navigation */}
       <BubbleMenu
-        logo="/logo.jpg"
+        logo="/logo5.png"
         items={menuItems}
         menuAriaLabel="Toggle navigation"
         menuBg="rgba(255, 255, 255, 0.95)"

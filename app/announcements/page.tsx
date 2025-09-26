@@ -76,9 +76,9 @@ export default async function AnnouncementsPage() {
       
       {/* Floating navigation menu */}
           <BubbleMenu
-            logo="/logo.jpg"
+            logo="/logo5.png"
             items={[
-              { label: 'home', href: '/', ariaLabel: 'Home', rotation: -8, hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' } },
+              { label: 'home', href: '/home', ariaLabel: 'Home', rotation: -8, hoverStyles: { bgColor: '#3b82f6', textColor: '#ffffff' } },
               { label: 'events', href: '/events', ariaLabel: 'Events', rotation: 8, hoverStyles: { bgColor: '#10b981', textColor: '#ffffff' } },
               { label: 'leaderboard', href: '/leaderboard', ariaLabel: 'Leaderboard', rotation: 8, hoverStyles: { bgColor: '#f59e0b', textColor: '#ffffff' } },
               { label: 'photogallery', href: '/photogallery', ariaLabel: 'Photo Gallery', rotation: 8, hoverStyles: { bgColor: '#ef4444', textColor: '#ffffff' } },

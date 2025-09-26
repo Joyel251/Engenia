@@ -308,7 +308,8 @@ export default function BubbleMenu({
       `}</style>
 
       <nav className={containerClassName} style={style} aria-label="Main navigation">
-        {!hideLogo && <div
+        {!hideLogo && <Link
+          href="/home"
           className={[
             'bubble logo-bubble',
             'inline-flex items-center justify-center',
@@ -318,9 +319,10 @@ export default function BubbleMenu({
             'bg-white/10 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none',
             'rounded-full border border-white/20 md:border-none',
             'shadow-lg md:shadow-none',
-            'flex-shrink-0'
+            'flex-shrink-0',
+            'hover:scale-105 active:scale-95 transition-transform duration-200'
           ].join(' ')}
-          aria-label="Logo"
+          aria-label="Go to Home"
           style={{
             minHeight: '40px',
             minWidth: '40px'
@@ -341,7 +343,7 @@ export default function BubbleMenu({
               logo
             )}
           </span>
-  </div>}
+  </Link>}
 
         <button
           type="button"

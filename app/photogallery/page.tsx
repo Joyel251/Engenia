@@ -232,7 +232,7 @@ export default function PhotoGalleryPage() {
     <div className="relative min-h-screen w-full text-foreground overflow-hidden" style={{backgroundColor: 'transparent'}}>
       {/* BubbleMenu Navigation */}
 <BubbleMenu
-        logo="/logo.jpg"
+        logo="/logo5.png"
         items={menuItems}
         menuAriaLabel="Toggle navigation"
         menuBg="rgba(255, 255, 255, 0.95)"

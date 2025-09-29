@@ -764,9 +764,9 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
         </div>
         <div>
           <div className="text-xl md:text-2xl font-bold text-white leading-tight">
-            {data.reduce((sum, d) => sum + d.totalEvents, 0)}
+            {Array.from(new Set(data.flatMap(d => d.winners.map((w: any) => w.event.id)))).length}
           </div>
-            <div className="text-[11px] md:text-xs text-zinc-400 uppercase tracking-wide">Total Events</div>
+            <div className="text-[11px] md:text-xs text-zinc-400 uppercase tracking-wide">Completed Events</div>
         </div>
         <div>
           <div className="text-xl md:text-2xl font-bold text-white leading-tight">

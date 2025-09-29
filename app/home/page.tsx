@@ -682,7 +682,7 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
               {[
                 { name: "CSE-A", desc: "Computer Science & Engineering - Section A", color: "purple" },
-                { name: "CSE-B", desc: "Computer Science & Engineering - Section B", color: "blue" },
+                { name: "CSE-B", desc: "Computer Science & Engineering - Section B", color: "yellow" },
                 { name: "AI/DS", desc: "Artificial Intelligence & Data Science", color: "green" },
                 { name: "ECE", desc: "Electronics & Communication Engineering", color: "pink" },
                 { name: "MECH", desc: "Mechanical Engineering", color: "white" },

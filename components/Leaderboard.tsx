@@ -723,9 +723,9 @@ export default function Leaderboard({ departments, settings, showPodium = true, 
                       >
                         {/* Recent Wins */}
                         <div className="mb-3">
-                          <h4 className="text-sm font-semibold text-white mb-2">Recent Wins</h4>
+                          <h4 className="text-sm font-semibold text-white mb-2">All Wins</h4>
                           <div className="space-y-1 max-h-32 overflow-y-auto custom-scroll">
-                            {dept.winners.slice(0, 5).map((winner) => (
+                            {dept.winners.map((winner) => (
                               <div key={winner.id} className="flex items-center justify-between text-xs">
                                 <span className="text-zinc-300 truncate">{winner.event.name}</span>
                                 <span className={`px-2 py-1 rounded ${

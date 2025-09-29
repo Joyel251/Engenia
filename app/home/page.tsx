@@ -197,8 +197,186 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Sponsors Section */}
+        <section className="py-16 sm:py-20 md:py-24 relative overflow-hidden">
+          <div className="container mx-auto px-4 relative z-30">
+            <motion.div
+              className="text-center mb-12 sm:mb-16"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              viewport={{ once: false }}
+            >
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-white mb-8 font-mono relative z-50" style={{textShadow: '2px 2px 4px rgba(0,0,0,0.8)'}}>Our Sponsors</h2>
+              
+              {/* Title Sponsor */}
+              <motion.div
+                className="mb-12 sm:mb-16"
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: false }}
+              >
+                <h3 className="text-xl sm:text-2xl font-bold text-white/90 mb-6 font-mono">Title Sponsor</h3>
+                <div className="flex justify-center">
+                  <motion.div
+                    className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 sm:p-8 border border-white/20 hover:border-white/40 transition-all duration-500 shadow-xl"
+                    whileHover={{ scale: 1.05, y: -5 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Image
+                      src="/ARAM LOGO_page-0001.jpg"
+                      alt="Aram Foundations - Title Sponsor"
+                      width={300}
+                      height={150}
+                      className="object-contain max-h-24 sm:max-h-32 md:max-h-40 w-auto"
+                    />
+                  </motion.div>
+                </div>
+              </motion.div>
 
-      
+              {/* Other Sponsors */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: false }}
+              >
+                <h3 className="text-lg sm:text-xl font-bold text-white/90 mb-8 font-mono">Other Sponsors</h3>
+                
+                {/* Mobile: Vertical one-by-one layout */}
+                <div className="md:hidden space-y-6">
+                  {[
+                    { name: "Liberty Leather Stores", src: "/Liberty.jpeg" },
+                    { name: "Skylark Technologies", src: "/Skylark blue logo-vector_page-0001.jpg" },
+                    { name: "The Education Company", src: "/Education Company.png" },
+                    { name: "Thangavel Nadar Stores", src: "/Thangavel Nadar Stores.jpeg" },
+                    { name: "His Image", src: "/His Image Logo.png" }
+                  ].map((sponsor, index) => (
+                    <motion.div
+                      key={sponsor.name}
+                      className="text-center"
+                      initial={{ opacity: 0, y: 30, scale: 0.9 }}
+                      whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                      transition={{ duration: 0.6, delay: index * 0.15 }}
+                      viewport={{ once: false, margin: "-50px" }}
+                    >
+                      <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg mx-auto max-w-xs">
+                        <Image
+                          src={sponsor.src}
+                          alt={sponsor.name}
+                          width={200}
+                          height={100}
+                          className="object-contain max-h-20 w-full opacity-90 mb-3"
+                        />
+                        <p className="text-white/80 text-sm font-medium">{sponsor.name}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+
+                {/* Desktop: Infinite horizontal scroll container */}
+                <div className="hidden md:block">
+                  <div className="relative overflow-hidden rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 p-4 sm:p-6">
+                    <motion.div
+                      className="flex gap-8 sm:gap-12 items-center justify-center min-w-fit"
+                      animate={{
+                        x: ["0%", "-50%"]
+                      }}
+                      transition={{
+                        duration: 20,
+                        repeat: Infinity,
+                        ease: "linear"
+                      }}
+                    >
+                      {/* First set of sponsors */}
+                      {[
+                        { name: "Liberty Leather Stores", src: "/Liberty.jpeg" },
+                        { name: "Skylark Technologies", src: "/Skylark blue logo-vector_page-0001.jpg" },
+                        { name: "The Education Company", src: "/Education Company.png" },
+                        { name: "Thangavel Nadar Stores", src: "/Thangavel Nadar Stores.jpeg" },
+                        { name: "His Image", src: "/His Image Logo.png" }
+                      ].map((sponsor, index) => (
+                        <motion.div
+                          key={sponsor.name}
+                          className="flex-shrink-0 text-center"
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-white/30 transition-all duration-300 shadow-lg mb-3">
+                            <Image
+                              src={sponsor.src}
+                              alt={sponsor.name}
+                              width={200}
+                              height={100}
+                              className="object-contain max-h-16 sm:max-h-20 md:max-h-24 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+                            />
+                          </div>
+                          <p className="text-white/80 text-sm font-medium px-2">{sponsor.name}</p>
+                        </motion.div>
+                      ))}
+                      
+                      {/* Duplicate set for seamless loop */}
+                      {[
+                        { name: "Liberty Leather Stores", src: "/Liberty.jpeg" },
+                        { name: "Skylark Technologies", src: "/Skylark blue logo-vector_page-0001.jpg" },
+                        { name: "The Education Company", src: "/Education Company.png" },
+                        { name: "Thangavel Nadar Stores", src: "/Thangavel Nadar Stores.jpeg" },
+                        { name: "His Image", src: "/His Image Logo.png" }
+                      ].map((sponsor, index) => (
+                        <motion.div
+                          key={`${sponsor.name}-duplicate`}
+                          className="flex-shrink-0 text-center"
+                          whileHover={{ scale: 1.05, y: -2 }}
+                          transition={{ duration: 0.2 }}
+                        >
+                          <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 sm:p-6 border border-white/20 hover:border-white/30 transition-all duration-300 shadow-lg mb-3">
+                            <Image
+                              src={sponsor.src}
+                              alt={sponsor.name}
+                              width={200}
+                              height={100}
+                              className="object-contain max-h-16 sm:max-h-20 md:max-h-24 w-auto opacity-90 hover:opacity-100 transition-opacity duration-300"
+                            />
+                          </div>
+                          <p className="text-white/80 text-sm font-medium px-2">{sponsor.name}</p>
+                        </motion.div>
+                      ))}
+                    </motion.div>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          </div>
+          
+          {/* Background decoration */}
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(prefersReducedMotion ? 0 : (isMobile ? 3 : 6))].map((_, i) => (
+              <motion.div
+                key={`sponsor-bg-${i}`}
+                className="absolute bg-white/3 backdrop-blur-sm border border-white/10 rounded-lg"
+                style={{
+                  width: `${12 + (i % 3) * 6}px`,
+                  height: `${12 + (i % 3) * 6}px`,
+                  left: `${10 + i * 15}%`,
+                  top: `${20 + (i % 4) * 20}%`,
+                }}
+                animate={{
+                  opacity: [0, 0.4, 0],
+                  rotate: prefersReducedMotion ? 0 : [0, 180, 360],
+                  scale: prefersReducedMotion ? 1 : [0.8, 1.2, 0.8],
+                }}
+                transition={{
+                  duration: 8 + i * 0.5,
+                  repeat: Infinity,
+                  delay: i * 1.2,
+                  ease: "easeInOut",
+                }}
+              />
+            ))}
+          </div>
+        </section>
+
 {/* About Section */}
 <section className="min-h-screen flex items-center justify-center py-20 relative">
   <div className="absolute inset-0 pointer-events-none">

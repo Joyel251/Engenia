@@ -251,7 +251,11 @@ export default function LandingPage() {
                     { name: "Skylark Technologies", src: "/Skylark blue logo-vector_page-0001.jpg" },
                     { name: "The Education Company", src: "/Education Company.png" },
                     { name: "Thangavel Nadar Stores", src: "/Thangavel Nadar Stores.jpeg" },
-                    { name: "His Image", src: "/His Image Logo.png" }
+                    { name: "His Image", src: "/His Image Logo.png" },
+                    { name: "Indian Overseas Bank", src: "/IoB logo.jpg" },
+                    { name: "DCB Bank", src: "/logo-dcb-bank.svg" },
+                    { name: "South Indian Bank", src: "/South Indian Bank logo.png" },
+                    { name: "Bakery Bar", src: "/Bakery Bar Logo.jpg" }
                   ].map((sponsor, index) => (
                     <motion.div
                       key={sponsor.name}
@@ -295,7 +299,11 @@ export default function LandingPage() {
                         { name: "Skylark Technologies", src: "/Skylark blue logo-vector_page-0001.jpg" },
                         { name: "The Education Company", src: "/Education Company.png" },
                         { name: "Thangavel Nadar Stores", src: "/Thangavel Nadar Stores.jpeg" },
-                        { name: "His Image", src: "/His Image Logo.png" }
+                        { name: "His Image", src: "/His Image Logo.png" },
+                        { name: "Indian Overseas Bank", src: "/IoB logo.jpg" },
+                        { name: "DCB Bank", src: "/logo-dcb-bank.svg" },
+                        { name: "South Indian Bank", src: "/South Indian Bank logo.png" },
+                        { name: "Bakery Bar", src: "/Bakery Bar Logo.jpg" }
                       ].map((sponsor, index) => (
                         <motion.div
                           key={sponsor.name}
@@ -322,7 +330,11 @@ export default function LandingPage() {
                         { name: "Skylark Technologies", src: "/Skylark blue logo-vector_page-0001.jpg" },
                         { name: "The Education Company", src: "/Education Company.png" },
                         { name: "Thangavel Nadar Stores", src: "/Thangavel Nadar Stores.jpeg" },
-                        { name: "His Image", src: "/His Image Logo.png" }
+                        { name: "His Image", src: "/His Image Logo.png" },
+                        { name: "Indian Overseas Bank", src: "/IoB logo.jpg" },
+                        { name: "DCB Bank", src: "/logo-dcb-bank.svg" },
+                        { name: "South Indian Bank", src: "/South Indian Bank logo.png" },
+                        { name: "Bakery Bar", src: "/Bakery Bar Logo.jpg" }
                       ].map((sponsor, index) => (
                         <motion.div
                           key={`${sponsor.name}-duplicate`}

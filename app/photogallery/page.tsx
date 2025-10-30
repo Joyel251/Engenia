@@ -159,10 +159,12 @@ export default function PhotoGalleryPage() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<'offstage' | 'onstage'>('offstage');
   
   const { visibleElements, observeElement } = useScrollAnimation();
   const titleRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
+  const categoriesRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -209,6 +211,9 @@ export default function PhotoGalleryPage() {
     }
     if (statsRef.current) {
       observeElement(statsRef.current);
+    }
+    if (categoriesRef.current) {
+      observeElement(categoriesRef.current);
     }
   }, [loading, observeElement]);
 
@@ -448,6 +453,87 @@ export default function PhotoGalleryPage() {
             Photo Gallery
           </h1>
 
+          {/* Category Selection Cards */}
+          <div 
+            ref={categoriesRef}
+            data-animate-id="categories"
+            className={`grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8 transition-all duration-1000 ease-out ${
+              visibleElements.has('categories') || !loading
+                ? 'translate-y-0 opacity-100' 
+                : 'translate-y-12 opacity-0'
+            }`}
+          >
+            {/* Offstage Events Card */}
+            <button
+              onClick={() => setSelectedCategory('offstage')}
+              className={`group relative p-8 rounded-2xl border-2 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
+                selectedCategory === 'offstage'
+                  ? 'bg-gradient-to-br from-purple-600/30 to-pink-600/30 border-purple-500 shadow-lg shadow-purple-500/50'
+                  : 'bg-zinc-900/60 border-zinc-700 hover:border-purple-500/50'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  selectedCategory === 'offstage' ? 'bg-purple-600' : 'bg-zinc-800'
+                }`}>
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white font-mono mb-2">Offstage Events</h3>
+                  <p className="text-zinc-300 text-sm font-mono">
+                    {photos.length} photos available
+                  </p>
+                </div>
+                {selectedCategory === 'offstage' && (
+                  <div className="absolute top-2 right-2">
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center animate-pulse">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </button>
+
+            {/* Onstage Events Card */}
+            <button
+              onClick={() => setSelectedCategory('onstage')}
+              className={`group relative p-8 rounded-2xl border-2 transition-all duration-500 transform hover:scale-105 hover:shadow-2xl ${
+                selectedCategory === 'onstage'
+                  ? 'bg-gradient-to-br from-blue-600/30 to-cyan-600/30 border-blue-500 shadow-lg shadow-blue-500/50'
+                  : 'bg-zinc-900/60 border-zinc-700 hover:border-blue-500/50'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-4">
+                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
+                  selectedCategory === 'onstage' ? 'bg-blue-600' : 'bg-zinc-800'
+                }`}>
+                  <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white font-mono mb-2">Onstage Events</h3>
+                  <p className="text-zinc-300 text-sm font-mono">
+                    Coming soon...
+                  </p>
+                </div>
+                {selectedCategory === 'onstage' && (
+                  <div className="absolute top-2 right-2">
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center animate-pulse">
+                      <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </button>
+          </div>
+
           {/* Download Controls */}
           {!loading && !error && photos.length > 0 && (
             <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
@@ -547,8 +633,45 @@ export default function PhotoGalleryPage() {
           </div>
         )}
 
+        {/* Onstage Events Coming Soon Message */}
+        {!loading && !error && selectedCategory === 'onstage' && (
+          <div className="text-center py-24 animate-fade-in">
+            <div className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border-2 border-blue-500/30 rounded-2xl p-10 max-w-2xl mx-auto backdrop-blur-sm transform transition-all duration-500 hover:scale-105 shadow-xl shadow-blue-500/20">
+              <div className="mb-6">
+                <div className="inline-block p-4 bg-blue-600/20 rounded-full mb-4 animate-pulse">
+                  <svg className="mx-auto h-20 w-20 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                  </svg>
+                </div>
+              </div>
+              <h2 className="text-3xl md:text-4xl font-black mb-4 text-white font-mono">
+                Onstage Events Coming Soon! 🎭
+              </h2>
+              <p className="text-blue-200 text-lg mb-6 font-mono">
+                Onstage event photos will be uploaded soon.
+              </p>
+              <div className="h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent mb-6"></div>
+              <p className="text-blue-300 text-base font-mono mb-8">
+                In the meantime, check out our amazing <span className="font-bold text-purple-400">Offstage Event</span> images! 📸
+              </p>
+              <button
+                onClick={() => setSelectedCategory('offstage')}
+                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-mono font-bold transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-purple-500/50 flex items-center gap-3 mx-auto"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                View Offstage Events
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Scroll-animated Photo Grid */}
-        {!loading && !error && photos.length > 0 && (
+        {!loading && !error && photos.length > 0 && selectedCategory === 'offstage' && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {photos.map((photo, index) => {

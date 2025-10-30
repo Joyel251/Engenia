@@ -90,16 +90,20 @@ const useScrollAnimation = () => {
   return { visibleElements, observeElement };
 };
 
-// Multiple Google Drive URL formats to try
-const getMultipleDriveUrls = (driveurl: string) => {
+// Convert Google Drive URL to direct CDN URL (bypasses proxy)
+const getDirectCdnUrl = (driveurl: string, size: 'thumbnail' | 'full' = 'full') => {
   if (!driveurl || typeof driveurl !== 'string') {
-    return [];
+    return '';
   }
 
+  // Extract file ID from various Google Drive URL formats
   const patterns = [
     /\/file\/d\/([a-zA-Z0-9_-]+)\/view/,
+    /\/uc\?export=view&id=([a-zA-Z0-9_-]+)/,
     /[?&]id=([a-zA-Z0-9_-]+)/,
-    /uc\?id=([a-zA-Z0-9_-]+)/
+    /uc\?id=([a-zA-Z0-9_-]+)/,
+    /\/d\/([a-zA-Z0-9_-]+)/,
+    /^([a-zA-Z0-9_-]{25,})$/  // Direct file ID
   ];
 
   let fileId = null;
@@ -112,15 +116,28 @@ const getMultipleDriveUrls = (driveurl: string) => {
   }
 
   if (fileId) {
-    return [
-      `https://drive.google.com/uc?export=view&id=${fileId}`,
-      `https://drive.google.com/thumbnail?id=${fileId}&sz=w800-h800`,
-      `https://lh3.googleusercontent.com/d/${fileId}=w800-h800`,
-      `https://drive.usercontent.google.com/download?id=${fileId}&export=view`
-    ];
+    if (size === 'thumbnail') {
+      // For gallery grid - optimized size (800x800)
+      return `https://lh3.googleusercontent.com/d/${fileId}=w800-h800`;
+    } else {
+      // For full-size modal and downloads - high quality (4000px max)
+      return `https://lh3.googleusercontent.com/d/${fileId}=s4000`;
+    }
   }
 
-  return [];
+  // Fallback to original URL if no pattern matches
+  return driveurl;
+};
+
+// Multiple Google Drive URL formats to try (fallback system)
+const getMultipleDriveUrls = (driveurl: string) => {
+  const directUrl = getDirectCdnUrl(driveurl, 'full');
+  
+  // Return array with primary CDN URL and fallbacks
+  return [
+    directUrl,
+    getDirectCdnUrl(driveurl, 'thumbnail'),
+  ].filter(url => url && url !== '');
 };
 
 const formatDate = (timestamp: string) => {
@@ -138,6 +155,10 @@ export default function PhotoGalleryPage() {
   const [error, setError] = useState<string | null>(null);
   const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
   const [urlAttempts, setUrlAttempts] = useState<Record<string, number>>({});
+  const [selectedImage, setSelectedImage] = useState<{ url: string; index: number } | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
+  const [downloading, setDownloading] = useState(false);
   
   const { visibleElements, observeElement } = useScrollAnimation();
   const titleRef = useRef<HTMLDivElement>(null);
@@ -193,12 +214,16 @@ export default function PhotoGalleryPage() {
 
   const handleImageError = (photoId: string, driveurl: string) => {
     console.error('Image failed to load for photo:', photoId);
+    console.error('Failed URL:', driveurl);
     
     const availableUrls = getMultipleDriveUrls(driveurl);
     const currentAttempt = urlAttempts[photoId] || 0;
     
+    console.log('Available URLs:', availableUrls);
+    console.log('Current attempt:', currentAttempt);
+    
     if (currentAttempt < availableUrls.length - 1) {
-      console.log(`Trying URL attempt ${currentAttempt + 1} for photo ${photoId}`);
+      console.log(`Trying URL attempt ${currentAttempt + 1} for photo ${photoId}:`, availableUrls[currentAttempt + 1]);
       setUrlAttempts(prev => ({
         ...prev,
         [photoId]: currentAttempt + 1
@@ -226,6 +251,166 @@ export default function PhotoGalleryPage() {
     setUrlAttempts({});
     setLoading(true);
     window.location.reload();
+  };
+
+  const openImageModal = (url: string, index: number) => {
+    setSelectedImage({ url, index });
+  };
+
+  const closeImageModal = () => {
+    setSelectedImage(null);
+  };
+
+  const navigateImage = (direction: 'prev' | 'next') => {
+    if (!selectedImage || photos.length === 0) return;
+    
+    let newIndex = selectedImage.index;
+    if (direction === 'prev') {
+      newIndex = (selectedImage.index - 1 + photos.length) % photos.length;
+    } else {
+      newIndex = (selectedImage.index + 1) % photos.length;
+    }
+    
+    const newPhoto = photos[newIndex];
+    const newUrl = getDirectCdnUrl(newPhoto.driveurl, 'full');
+    
+    setSelectedImage({ url: newUrl, index: newIndex });
+  };
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!selectedImage) return;
+      
+      if (e.key === 'Escape') {
+        closeImageModal();
+      } else if (e.key === 'ArrowLeft') {
+        navigateImage('prev');
+      } else if (e.key === 'ArrowRight') {
+        navigateImage('next');
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedImage, photos]);
+
+  // Toggle selection mode
+  const toggleSelectionMode = () => {
+    setSelectionMode(!selectionMode);
+    if (selectionMode) {
+      setSelectedPhotos(new Set());
+    }
+  };
+
+  // Toggle photo selection
+  const togglePhotoSelection = (photoId: string) => {
+    setSelectedPhotos(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(photoId)) {
+        newSet.delete(photoId);
+      } else {
+        newSet.add(photoId);
+      }
+      return newSet;
+    });
+  };
+
+  // Select all photos
+  const selectAllPhotos = () => {
+    setSelectedPhotos(new Set(photos.map(p => p.id)));
+  };
+
+  // Deselect all photos
+  const deselectAllPhotos = () => {
+    setSelectedPhotos(new Set());
+  };
+
+  // Download single image
+  const downloadSingleImage = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download image');
+    }
+  };
+
+  // Download selected images
+  const downloadSelectedImages = async () => {
+    if (selectedPhotos.size === 0) {
+      alert('Please select at least one image to download');
+      return;
+    }
+
+    setDownloading(true);
+
+    try {
+      // If only one image selected, download it directly
+      if (selectedPhotos.size === 1) {
+        const photoId = Array.from(selectedPhotos)[0];
+        const photo = photos.find(p => p.id === photoId);
+        if (photo) {
+          const url = getDirectCdnUrl(photo.driveurl, 'full');
+          await downloadSingleImage(url, `photo-${photoId}.jpg`);
+        }
+      } else {
+        // Download multiple images using JSZip
+        const JSZip = (await import('jszip')).default;
+        const zip = new JSZip();
+
+        // Add selected images to zip
+        let count = 0;
+        const selectedPhotoIds = Array.from(selectedPhotos);
+        for (const photoId of selectedPhotoIds) {
+          const photo = photos.find(p => p.id === photoId);
+          if (photo) {
+            const url = getDirectCdnUrl(photo.driveurl, 'full');
+
+            try {
+              const response = await fetch(url);
+              const blob = await response.blob();
+              const index = photos.findIndex(p => p.id === photoId);
+              zip.file(`photo-${index + 1}.jpg`, blob);
+              count++;
+            } catch (error) {
+              console.error(`Failed to add image ${photoId} to zip:`, error);
+            }
+          }
+        }
+
+        if (count > 0) {
+          // Generate and download zip
+          const zipBlob = await zip.generateAsync({ type: 'blob' });
+          const zipUrl = window.URL.createObjectURL(zipBlob);
+          const link = document.createElement('a');
+          link.href = zipUrl;
+          link.download = `photos-${count}-images.zip`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          window.URL.revokeObjectURL(zipUrl);
+        }
+      }
+
+      // Clear selection after download
+      setSelectedPhotos(new Set());
+      setSelectionMode(false);
+    } catch (error) {
+      console.error('Download failed:', error);
+      alert('Failed to download images');
+    } finally {
+      setDownloading(false);
+    }
   };
 
   return (
@@ -259,9 +444,66 @@ export default function PhotoGalleryPage() {
               : 'translate-y-12 opacity-0'
           }`}
         >
-          <h1 className="text-4xl md:text-6xl font-black mb-10 text-center font-mono drop-shadow-2xl text-white">
+          <h1 className="text-4xl md:text-6xl font-black mb-6 text-center font-mono drop-shadow-2xl text-white">
             Photo Gallery
           </h1>
+
+          {/* Download Controls */}
+          {!loading && !error && photos.length > 0 && (
+            <div className="flex flex-wrap items-center justify-center gap-3 mb-6">
+              {!selectionMode ? (
+                <button
+                  onClick={toggleSelectionMode}
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-mono font-bold transition-all duration-300 transform hover:scale-105 shadow-lg flex items-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  Select Photos
+                </button>
+              ) : (
+                <>
+                  <button
+                    onClick={selectAllPhotos}
+                    className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-mono text-sm transition-all duration-300 transform hover:scale-105"
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={deselectAllPhotos}
+                    className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-mono text-sm transition-all duration-300 transform hover:scale-105"
+                  >
+                    Deselect All
+                  </button>
+                  <button
+                    onClick={downloadSelectedImages}
+                    disabled={selectedPhotos.size === 0 || downloading}
+                    className="px-6 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg font-mono font-bold transition-all duration-300 transform hover:scale-105 flex items-center gap-2"
+                  >
+                    {downloading ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        Downloading...
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                        Download ({selectedPhotos.size})
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={toggleSelectionMode}
+                    className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-mono text-sm transition-all duration-300 transform hover:scale-105"
+                  >
+                    Cancel
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Loading State */}
@@ -319,6 +561,11 @@ export default function PhotoGalleryPage() {
                 const currentUrl = availableUrls[currentAttempt];
                 const hasError = imageErrors[photo.id];
                 const animateId = `photo-${index}`;
+                const isSelected = selectedPhotos.has(photo.id);
+                
+                // Use optimized thumbnail URL for grid view
+                const thumbnailUrl = getDirectCdnUrl(photo.driveurl, 'thumbnail');
+                const fullUrl = getDirectCdnUrl(photo.driveurl, 'full');
 
                 return (
                   <div 
@@ -333,7 +580,8 @@ export default function PhotoGalleryPage() {
                     className={`group relative rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm
                       transform transition-all duration-700 ease-out
                       hover:scale-105 hover:shadow-white/20 hover:-translate-y-2
-                      bg-zinc-900/60 border border-white/10
+                      ${isSelected ? 'ring-4 ring-blue-500 scale-105' : 'bg-zinc-900/60 border border-white/10'}
+                      ${selectionMode ? 'cursor-pointer' : ''}
                       ${visibleElements.has(animateId)
                         ? 'translate-y-0 opacity-100 scale-100' 
                         : 'translate-y-8 opacity-0 scale-95'
@@ -341,17 +589,49 @@ export default function PhotoGalleryPage() {
                     style={{
                       transitionDelay: `${(index % 4) * 150}ms`, // Stagger by row
                     }}
+                    onClick={() => {
+                      if (selectionMode) {
+                        togglePhotoSelection(photo.id);
+                      } else if (thumbnailUrl) {
+                        openImageModal(fullUrl, index);
+                      }
+                    }}
                   >
-                    <a
-                      href={photo.driveurl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
-                    >
-                      <div className="relative w-full h-56 bg-zinc-800 overflow-hidden">
-                        {currentUrl && !hasError ? (
+                    {/* Selection Checkbox */}
+                    {selectionMode && (
+                      <div className="absolute top-2 left-2 z-20">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
+                          isSelected ? 'bg-blue-600' : 'bg-black/60 backdrop-blur-sm'
+                        }`}>
+                          {isSelected && (
+                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                            </svg>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Download Button (Individual) */}
+                    {!selectionMode && thumbnailUrl && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadSingleImage(fullUrl, `photo-${index + 1}.jpg`);
+                        }}
+                        className="absolute top-2 left-2 z-20 p-2 bg-black/60 hover:bg-blue-600 backdrop-blur-sm rounded-full transition-all duration-300 transform hover:scale-110 opacity-0 group-hover:opacity-100"
+                        title="Download this image"
+                      >
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                        </svg>
+                      </button>
+                    )}
+
+                    <div className="relative w-full h-56 bg-zinc-800 overflow-hidden">
+                        {thumbnailUrl ? (
                           <Image
-                            src={currentUrl}
+                            src={thumbnailUrl}
                             alt={`Gallery Photo ${index + 1}`}
                             fill
                             className="object-cover transition-all duration-700 ease-out transform group-hover:scale-110 group-hover:rotate-1"
@@ -384,7 +664,7 @@ export default function PhotoGalleryPage() {
                                 Click to View Image
                               </p>
                               <p className="text-xs font-mono text-zinc-400 transition-colors duration-300 group-hover:text-zinc-300">
-                                Opens in Google Drive
+                                Loading from Drive...
                               </p>
                               <p className="text-xs font-mono text-yellow-400 mt-2 animate-pulse">
                                 Attempt: {currentAttempt + 1}/{availableUrls.length}
@@ -420,7 +700,6 @@ export default function PhotoGalleryPage() {
                         {/* Animated Border Glow Effect */}
                         <div className="absolute inset-0 rounded-2xl border-2 border-transparent group-hover:border-white/20 transition-all duration-500 pointer-events-none"></div>
                       </div>
-                    </a>
                   </div>
                 );
               })}
@@ -445,6 +724,97 @@ export default function PhotoGalleryPage() {
           </>
         )}
       </div>
+
+      {/* Image Modal/Lightbox */}
+      {selectedImage && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in"
+          onClick={closeImageModal}
+        >
+          {/* Close Button */}
+          <button
+            onClick={closeImageModal}
+            className="absolute top-4 right-4 z-50 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 transform hover:scale-110 group"
+            aria-label="Close"
+          >
+            <svg className="w-6 h-6 text-white group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Download Button in Modal */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              downloadSingleImage(selectedImage.url, `photo-${selectedImage.index + 1}.jpg`);
+            }}
+            className="absolute top-4 right-20 z-50 p-3 bg-white/10 hover:bg-blue-600 rounded-full transition-all duration-300 transform hover:scale-110"
+            aria-label="Download image"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+          </button>
+
+          {/* Previous Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateImage('prev');
+            }}
+            className="absolute left-4 z-50 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 transform hover:scale-110 hover:-translate-x-1"
+            aria-label="Previous image"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+
+          {/* Next Button */}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              navigateImage('next');
+            }}
+            className="absolute right-4 z-50 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-all duration-300 transform hover:scale-110 hover:translate-x-1"
+            aria-label="Next image"
+          >
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          {/* Image Counter */}
+          <div className="absolute top-4 left-4 z-50 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-lg">
+            <p className="text-white font-mono text-sm">
+              {selectedImage.index + 1} / {photos.length}
+            </p>
+          </div>
+
+          {/* Main Image */}
+          <div 
+            className="relative max-w-7xl max-h-[90vh] w-full h-full flex items-center justify-center p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <Image
+              src={selectedImage.url}
+              alt={`Photo ${selectedImage.index + 1}`}
+              width={1920}
+              height={1080}
+              className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-2xl"
+              unoptimized={true}
+              priority
+            />
+          </div>
+
+          {/* Keyboard Instructions */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-lg">
+            <p className="text-white/70 font-mono text-xs text-center">
+              Use ← → arrows to navigate • ESC to close
+            </p>
+          </div>
+        </div>
+      )}
 
       <style jsx>{`
         @keyframes fade-in {

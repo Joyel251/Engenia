@@ -84,7 +84,10 @@ export const config = {
     "/api/launchstatus",
     "/api/nirvakixypss/:path*",
     "/admin/:path*",
-    "/nirvakixypss/:path*"
+    "/nirvakixypss/dashboard/:path*",  // Only protect dashboard
+    "/nirvakixypss/launch/:path*",     // Only protect launch
+    "/nirvakixypss/preview/:path*"     // Only protect preview
+    // Note: /nirvakixypss/photogallery is now NOT rate limited
   ],
 };
 

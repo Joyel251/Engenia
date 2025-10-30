@@ -645,14 +645,14 @@ export default function PhotoGalleryPage() {
                 </div>
               </div>
               <h2 className="text-3xl md:text-4xl font-black mb-4 text-white font-mono">
-                Onstage Events Coming Soon! 🎭
+                Onstage Events Coming Soon!
               </h2>
               <p className="text-blue-200 text-lg mb-6 font-mono">
                 Onstage event photos will be uploaded soon.
               </p>
               <div className="h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent mb-6"></div>
               <p className="text-blue-300 text-base font-mono mb-8">
-                In the meantime, check out our amazing <span className="font-bold text-purple-400">Offstage Event</span> images! 📸
+                In the meantime, check out the <span className="font-bold text-purple-400">Offstage Event</span> images! 
               </p>
               <button
                 onClick={() => setSelectedCategory('offstage')}

@@ -160,11 +160,44 @@ export default function PhotoGalleryPage() {
   const [selectedPhotos, setSelectedPhotos] = useState<Set<string>>(new Set());
   const [downloading, setDownloading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<'offstage' | 'onstage'>('offstage');
+  const [offstageCount, setOffstageCount] = useState(0);
+  const [onstageCount, setOnstageCount] = useState(0);
   
   const { visibleElements, observeElement } = useScrollAnimation();
   const titleRef = useRef<HTMLDivElement>(null);
   const statsRef = useRef<HTMLDivElement>(null);
   const categoriesRef = useRef<HTMLDivElement>(null);
+
+  // Fetch counts for both categories on mount
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        // Fetch offstage count
+        const offstageResponse = await fetch('/api/photogallery?division=OFFSTAGE', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (offstageResponse.ok) {
+          const offstageData = await offstageResponse.json();
+          setOffstageCount(offstageData.photos?.length || 0);
+        }
+
+        // Fetch onstage count
+        const onstageResponse = await fetch('/api/photogallery?division=ONSTAGE', {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' },
+        });
+        if (onstageResponse.ok) {
+          const onstageData = await onstageResponse.json();
+          setOnstageCount(onstageData.photos?.length || 0);
+        }
+      } catch (err) {
+        console.error('Failed to fetch photo counts:', err);
+      }
+    };
+
+    fetchCounts();
+  }, []);
 
   useEffect(() => {
     const fetchPhotos = async () => {
@@ -489,7 +522,7 @@ export default function PhotoGalleryPage() {
                 <div>
                   <h3 className="text-2xl font-bold text-white font-mono mb-2">Offstage Events</h3>
                   <p className="text-zinc-300 text-sm font-mono">
-                    {photos.length} photos available
+                    {offstageCount} photos available
                   </p>
                 </div>
                 {selectedCategory === 'offstage' && (
@@ -524,7 +557,7 @@ export default function PhotoGalleryPage() {
                 <div>
                   <h3 className="text-2xl font-bold text-white font-mono mb-2">Onstage Events</h3>
                   <p className="text-zinc-300 text-sm font-mono">
-                    {photos.length} photos available
+                    {onstageCount} photos available
                   </p>
                 </div>
                 {selectedCategory === 'onstage' && (

@@ -9,23 +9,45 @@ export async function GET(request) {
 
     let query = supabaseAdmin
       .from(TABLES.PHOTO_GALLERY)
-      .select("id, driveurl, created_at, division");
+      .select("id, driveurl, created_at, division", { count: 'exact' });
 
     // Filter by division if provided
     if (division && (division === 'ONSTAGE' || division === 'OFFSTAGE')) {
       query = query.eq('division', division);
     }
 
-    const { data, error } = await query.order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Supabase error:', error);
-      throw error;
+    // Fetch all results by using a large limit and pagination if needed
+    let allData = [];
+    let from = 0;
+    const batchSize = 1000;
+    let hasMore = true;
+
+    while (hasMore) {
+      const { data, error, count } = await query
+        .order('created_at', { ascending: false })
+        .range(from, from + batchSize - 1);
+      
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+      
+      if (data && data.length > 0) {
+        allData = allData.concat(data);
+        from += batchSize;
+        
+        // Check if we've fetched all records
+        if (data.length < batchSize || (count !== null && allData.length >= count)) {
+          hasMore = false;
+        }
+      } else {
+        hasMore = false;
+      }
     }
     
     return NextResponse.json({ 
-      photos: data || [],
-      count: data?.length || 0
+      photos: allData || [],
+      count: allData?.length || 0
     }, { status: 200 });
     
   } catch (error) {

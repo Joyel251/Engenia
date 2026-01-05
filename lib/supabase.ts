@@ -82,11 +82,12 @@ export interface Admin {
   password: string
 }
 
-// Photo Gallery interface - minimal structure with only 3 fields
+// Photo Gallery interface - with division support
 export interface PhotoGallery {
   id: string;
   driveurl: string;
   created_at: string;
+  division?: 'ONSTAGE' | 'OFFSTAGE' | null;
 }
 
 // Helper functions for common operations

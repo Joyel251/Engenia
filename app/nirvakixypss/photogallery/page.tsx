@@ -6,6 +6,7 @@ import Link from "next/link";
 export default function PhotoGalleryAdmin() {
   const [folderUrl, setFolderUrl] = useState("");
   const [clearExisting, setClearExisting] = useState(false);
+  const [division, setDivision] = useState<'ONSTAGE' | 'OFFSTAGE'>('ONSTAGE');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<{
     success?: boolean;
@@ -36,6 +37,7 @@ export default function PhotoGalleryAdmin() {
         body: JSON.stringify({
           folderUrl: folderUrl.trim(),
           clearExisting: clearExisting,
+          division: division,
         }),
       });
 
@@ -113,6 +115,26 @@ export default function PhotoGalleryAdmin() {
               </p>
             </div>
 
+            {/* Division Selection */}
+            <div>
+              <label htmlFor="division" className="block text-sm font-medium mb-2">
+                Select Division
+              </label>
+              <select
+                id="division"
+                value={division}
+                onChange={(e) => setDivision(e.target.value as 'ONSTAGE' | 'OFFSTAGE')}
+                className="w-full px-4 py-3 bg-gray-700/50 border border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm sm:text-base"
+                disabled={loading}
+              >
+                <option value="ONSTAGE">ONSTAGE</option>
+                <option value="OFFSTAGE">OFFSTAGE</option>
+              </select>
+              <p className="text-xs text-gray-400 mt-2">
+                Choose which category these photos belong to
+              </p>
+            </div>
+
             <div className="flex items-center space-x-3">
               <input
                 type="checkbox"
@@ -123,7 +145,7 @@ export default function PhotoGalleryAdmin() {
                 disabled={loading}
               />
               <label htmlFor="clearExisting" className="text-sm">
-                Clear existing photos before import (⚠️ This will delete all current photos)
+                Clear existing photos in <strong>{division}</strong> division before import
               </label>
             </div>
 

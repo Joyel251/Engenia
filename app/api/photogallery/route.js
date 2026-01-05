@@ -2,12 +2,21 @@ import { NextResponse } from "next/server";
 import { supabaseAdmin, TABLES } from "@/lib/supabase";
 import { google } from 'googleapis';
 
-export async function GET() {
+export async function GET(request) {
   try {
-    const { data, error } = await supabaseAdmin
+    const { searchParams } = new URL(request.url);
+    const division = searchParams.get('division');
+
+    let query = supabaseAdmin
       .from(TABLES.PHOTO_GALLERY)
-      .select("id, driveurl, created_at")
-      .order('created_at', { ascending: false });
+      .select("id, driveurl, created_at, division");
+
+    // Filter by division if provided
+    if (division && (division === 'ONSTAGE' || division === 'OFFSTAGE')) {
+      query = query.eq('division', division);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
     
     if (error) {
       console.error('Supabase error:', error);
@@ -49,7 +58,7 @@ function extractFolderId(url) {
 export async function POST(request) {
   try {
     const body = await request.json();
-    const { folderUrl, clearExisting } = body;
+    const { folderUrl, clearExisting, division } = body;
 
     if (!folderUrl) {
       return NextResponse.json(
@@ -114,12 +123,20 @@ export async function POST(request) {
       );
     }
 
-    // Clear existing photos if requested
+    // Clear existing photos if requested (optionally filtered by division)
     if (clearExisting) {
-      const { error: deleteError } = await supabaseAdmin
+      let deleteQuery = supabaseAdmin
         .from(TABLES.PHOTO_GALLERY)
-        .delete()
-        .neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+        .delete();
+
+      // If division is specified, only clear photos from that division
+      if (division && (division === 'ONSTAGE' || division === 'OFFSTAGE')) {
+        deleteQuery = deleteQuery.eq('division', division);
+      } else {
+        deleteQuery = deleteQuery.neq('id', '00000000-0000-0000-0000-000000000000'); // Delete all
+      }
+      
+      const { error: deleteError } = await deleteQuery;
       
       if (deleteError) {
         console.error('Error clearing existing photos:', deleteError);
@@ -129,6 +146,7 @@ export async function POST(request) {
     // Log file permissions for debugging
     console.log(`Found ${allFiles.length} images in folder`);
     console.log('Sample file:', allFiles[0]?.name, allFiles[0]?.id);
+    console.log('Division:', division || 'none');
 
     // Prepare photo data for insertion
     // Using multiple URL formats to maximize compatibility
@@ -136,10 +154,17 @@ export async function POST(request) {
       // Use webContentLink if available (direct download link)
       // Otherwise use the uc?export=view format
       const directUrl = file.webContentLink || `https://drive.google.com/uc?export=view&id=${file.id}`;
-      return {
+      const photoEntry = {
         driveurl: directUrl,
         created_at: file.createdTime || new Date().toISOString()
       };
+      
+      // Add division if specified
+      if (division && (division === 'ONSTAGE' || division === 'OFFSTAGE')) {
+        photoEntry.division = division;
+      }
+      
+      return photoEntry;
     });
 
     // Insert photos in batches (Supabase has a limit)

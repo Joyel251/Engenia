@@ -172,7 +172,11 @@ export default function PhotoGalleryPage() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch("/api/photogallery", {
+        // Build URL with division filter
+        const division = selectedCategory.toUpperCase(); // 'offstage' -> 'OFFSTAGE', 'onstage' -> 'ONSTAGE'
+        const url = `/api/photogallery?division=${division}`;
+        
+        const response = await fetch(url, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -202,7 +206,7 @@ export default function PhotoGalleryPage() {
     };
 
     fetchPhotos();
-  }, []);
+  }, [selectedCategory]);
 
   // Setup scroll observers
   useEffect(() => {
@@ -633,45 +637,8 @@ export default function PhotoGalleryPage() {
           </div>
         )}
 
-        {/* Onstage Events Coming Soon Message */}
-        {!loading && !error && selectedCategory === 'onstage' && (
-          <div className="text-center py-24 animate-fade-in">
-            <div className="bg-gradient-to-br from-blue-900/40 to-cyan-900/40 border-2 border-blue-500/30 rounded-2xl p-10 max-w-2xl mx-auto backdrop-blur-sm transform transition-all duration-500 hover:scale-105 shadow-xl shadow-blue-500/20">
-              <div className="mb-6">
-                <div className="inline-block p-4 bg-blue-600/20 rounded-full mb-4 animate-pulse">
-                  <svg className="mx-auto h-20 w-20 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-3xl md:text-4xl font-black mb-4 text-white font-mono">
-                Onstage Events Coming Soon!
-              </h2>
-              <p className="text-blue-200 text-lg mb-6 font-mono">
-                Onstage event photos will be uploaded soon.
-              </p>
-              <div className="h-px bg-gradient-to-r from-transparent via-blue-400 to-transparent mb-6"></div>
-              <p className="text-blue-300 text-base font-mono mb-8">
-                In the meantime, check out the <span className="font-bold text-purple-400">Offstage Event</span> images! 
-              </p>
-              <button
-                onClick={() => setSelectedCategory('offstage')}
-                className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white rounded-xl font-mono font-bold transition-all duration-300 transform hover:scale-110 shadow-lg hover:shadow-purple-500/50 flex items-center gap-3 mx-auto"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                View Offstage Events
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Scroll-animated Photo Grid */}
-        {!loading && !error && photos.length > 0 && selectedCategory === 'offstage' && (
+        {!loading && !error && photos.length > 0 && (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
               {photos.map((photo, index) => {

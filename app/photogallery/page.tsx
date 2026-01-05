@@ -424,18 +424,20 @@ export default function PhotoGalleryPage() {
 
   return (
     <div className="relative min-h-screen w-full text-foreground overflow-hidden" style={{backgroundColor: 'transparent'}}>
-      {/* BubbleMenu Navigation */}
-<BubbleMenu
-        logo="/logo5.png"
-        items={menuItems}
-        menuAriaLabel="Toggle navigation"
-        menuBg="rgba(255, 255, 255, 0.95)"
-        menuContentColor="#111111"
-        useFixedPosition={true}
-        animationEase="back.out(1.5)"
-        animationDuration={0.6}
-        staggerDelay={0.1}
-      />
+      {/* BubbleMenu Navigation - Hidden when modal is open */}
+      {!selectedImage && (
+        <BubbleMenu
+          logo="/logo5.png"
+          items={menuItems}
+          menuAriaLabel="Toggle navigation"
+          menuBg="rgba(255, 255, 255, 0.95)"
+          menuContentColor="#111111"
+          useFixedPosition={true}
+          animationEase="back.out(1.5)"
+          animationDuration={0.6}
+          staggerDelay={0.1}
+        />
+      )}
 
       {/* Beams Background */}
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -522,7 +524,7 @@ export default function PhotoGalleryPage() {
                 <div>
                   <h3 className="text-2xl font-bold text-white font-mono mb-2">Onstage Events</h3>
                   <p className="text-zinc-300 text-sm font-mono">
-                    Coming soon...
+                    {photos.length} photos available
                   </p>
                 </div>
                 {selectedCategory === 'onstage' && (
